@@ -1,0 +1,851 @@
+// POS System Prisma Schema
+// Version: 1.1
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum DeviceType {
+  POS
+  KIOSK
+  CUSTOMER_DISPLAY
+  KDS
+}
+
+enum DeviceOs {
+  WINDOWS
+  ANDROID
+}
+
+enum DeviceStatus {
+  ACTIVE
+  INACTIVE
+  OFFLINE
+}
+
+enum EntityStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum OrderStatus {
+  OPEN
+  PAID
+  CANCELLED
+  VOID
+}
+
+enum OrderChannel {
+  POS
+  KIOSK
+  QR
+  DELIVERY
+}
+
+enum OrderItemStatus {
+  ORDERED
+  COOKING
+  SERVED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CARD
+  CASH
+  TRANSFER
+  POINT
+  OTHER
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  DECLINED
+  CANCELLED
+}
+
+enum StockMovementType {
+  IN
+  OUT
+  ADJUST
+}
+
+enum LoyaltyTxnType {
+  EARN
+  REDEEM
+  EXPIRE
+  ADJUST
+}
+
+enum TaxType {
+  TAXABLE
+  ZERO
+  EXEMPT
+}
+
+enum CouponType {
+  FIXED
+  PERCENT
+  FREE_ITEM
+}
+
+enum ReceiptType {
+  CUSTOMER
+  KITCHEN
+  PICKUP
+}
+
+enum TableShape {
+  RECT
+  CIRCLE
+}
+
+enum QrType {
+  TABLE_ORDER
+  PICKUP
+}
+
+// ============================================
+// ORGANIZATION
+// ============================================
+
+/// 프랜차이즈 본사
+model Franchise {
+  id        String       @id @default(uuid()) @db.Uuid
+  name      String
+  status    EntityStatus @default(ACTIVE)
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime     @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt DateTime?    @map("deleted_at") @db.Timestamptz
+
+  // Relations
+  stores    Store[]
+  customers Customer[]
+  coupons   Coupon[]
+
+  @@map("franchises")
+}
+
+/// 매장
+model Store {
+  id             String       @id @default(uuid()) @db.Uuid
+  franchiseId    String?      @map("franchise_id") @db.Uuid
+  name           String
+  code           String       @unique
+  address        String?
+  businessNumber String?      @map("business_number")
+  vanProvider    String?      @default("KFTC") @map("van_provider")
+  vanMerchantId  String?      @map("van_merchant_id")
+  timezone       String       @default("Asia/Seoul")
+  status         EntityStatus @default(ACTIVE)
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime     @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt      DateTime?    @map("deleted_at") @db.Timestamptz
+
+  // Relations
+  franchise        Franchise?        @relation(fields: [franchiseId], references: [id])
+  devices          Device[]
+  users            User[]
+  roles            Role[]
+  shifts           Shift[]
+  menuCategories   MenuCategory[]
+  menuItems        MenuItem[]
+  menuSets         MenuSet[]
+  menuOptionGroups MenuOptionGroup[]
+  priceRules       PriceRule[]
+  tableZones       TableZone[]
+  tables           Table[]
+  qrCodes          QrCode[]
+  orders           Order[]
+  inventoryItems   InventoryItem[]
+  customers        Customer[]
+  coupons          Coupon[]
+  auditLogs        AuditLog[]
+
+  @@map("stores")
+}
+
+/// POS/키오스크 디바이스
+model Device {
+  id            String       @id @default(uuid()) @db.Uuid
+  storeId       String       @map("store_id") @db.Uuid
+  type          DeviceType
+  os            DeviceOs
+  deviceCode    String       @unique @map("device_code")
+  deviceName    String?      @map("device_name")
+  appVersion    String?      @map("app_version")
+  hardwareModel String?      @map("hardware_model")
+  lastSeenAt    DateTime?    @map("last_seen_at") @db.Timestamptz
+  status        DeviceStatus @default(ACTIVE)
+  configJson    Json?        @default("{}") @map("config_json")
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime     @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  store     Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  shifts    Shift[]
+  orders    Order[]
+  auditLogs AuditLog[]
+
+  @@index([storeId])
+  @@map("devices")
+}
+
+// ============================================
+// USER & AUTH
+// ============================================
+
+/// 역할/권한
+model Role {
+  id              String   @id @default(uuid()) @db.Uuid
+  storeId         String?  @map("store_id") @db.Uuid
+  name            String
+  permissionsJson Json     @default("{}") @map("permissions_json")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  store Store? @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  users User[]
+
+  @@map("roles")
+}
+
+/// 직원/사용자
+model User {
+  id        String       @id @default(uuid()) @db.Uuid
+  storeId   String       @map("store_id") @db.Uuid
+  roleId    String?      @map("role_id") @db.Uuid
+  name      String
+  phone     String?
+  email     String?
+  pinHash   String?      @map("pin_hash")
+  status    EntityStatus @default(ACTIVE)
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime     @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt DateTime?    @map("deleted_at") @db.Timestamptz
+
+  // Relations
+  store          Store           @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  role           Role?           @relation(fields: [roleId], references: [id])
+  shiftsOpened   Shift[]         @relation("ShiftOpenedBy")
+  shiftsClosed   Shift[]         @relation("ShiftClosedBy")
+  stockMovements StockMovement[]
+  auditLogs      AuditLog[]
+
+  @@unique([storeId, phone])
+  @@index([storeId])
+  @@map("users")
+}
+
+/// 근무/시재 관리
+model Shift {
+  id        String    @id @default(uuid()) @db.Uuid
+  storeId   String    @map("store_id") @db.Uuid
+  deviceId  String?   @map("device_id") @db.Uuid
+  openedBy  String?   @map("opened_by") @db.Uuid
+  openedAt  DateTime  @default(now()) @map("opened_at") @db.Timestamptz
+  closedBy  String?   @map("closed_by") @db.Uuid
+  closedAt  DateTime? @map("closed_at") @db.Timestamptz
+  cashOpen  Decimal   @default(0) @map("cash_open") @db.Decimal(12, 2)
+  cashClose Decimal?  @map("cash_close") @db.Decimal(12, 2)
+  cashSales Decimal   @default(0) @map("cash_sales") @db.Decimal(12, 2)
+  cardSales Decimal   @default(0) @map("card_sales") @db.Decimal(12, 2)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  store  Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  device Device? @relation(fields: [deviceId], references: [id])
+  opener User?   @relation("ShiftOpenedBy", fields: [openedBy], references: [id])
+  closer User?   @relation("ShiftClosedBy", fields: [closedBy], references: [id])
+
+  @@index([storeId])
+  @@map("shifts")
+}
+
+// ============================================
+// MENU
+// ============================================
+
+/// 메뉴 카테고리
+model MenuCategory {
+  id        String    @id @default(uuid()) @db.Uuid
+  storeId   String    @map("store_id") @db.Uuid
+  parentId  String?   @map("parent_id") @db.Uuid
+  name      String
+  color     String    @default("#333333")
+  sortOrder Int       @default(0) @map("sort_order")
+  isActive  Boolean   @default(true) @map("is_active")
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz
+
+  // Relations
+  store     Store          @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  parent    MenuCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children  MenuCategory[] @relation("CategoryHierarchy")
+  menuItems MenuItem[]
+  menuSets  MenuSet[]
+
+  @@index([storeId])
+  @@map("menu_categories")
+}
+
+/// 메뉴 아이템
+model MenuItem {
+  id          String    @id @default(uuid()) @db.Uuid
+  storeId     String    @map("store_id") @db.Uuid
+  categoryId  String?   @map("category_id") @db.Uuid
+  name        String
+  description String?
+  sku         String?
+  barcode     String?
+  price       Decimal   @db.Decimal(12, 2)
+  costPrice   Decimal?  @map("cost_price") @db.Decimal(12, 2)
+  taxType     TaxType   @default(TAXABLE) @map("tax_type")
+  imageUrl    String?   @map("image_url")
+  isActive    Boolean   @default(true) @map("is_active")
+  isSoldOut   Boolean   @default(false) @map("is_sold_out")
+  sortOrder   Int       @default(0) @map("sort_order")
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz
+
+  // Relations
+  store                Store                 @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  category             MenuCategory?         @relation(fields: [categoryId], references: [id])
+  menuItemOptionGroups MenuItemOptionGroup[]
+  menuSetItems         MenuSetItem[]
+  orderItems           OrderItem[]
+  priceRules           PriceRule[]
+
+  @@unique([storeId, sku])
+  @@unique([storeId, barcode])
+  @@index([storeId])
+  @@index([categoryId])
+  @@map("menu_items")
+}
+
+/// 세트 메뉴
+model MenuSet {
+  id             String    @id @default(uuid()) @db.Uuid
+  storeId        String    @map("store_id") @db.Uuid
+  categoryId     String?   @map("category_id") @db.Uuid
+  name           String
+  description    String?
+  price          Decimal   @db.Decimal(12, 2)
+  discountAmount Decimal   @default(0) @map("discount_amount") @db.Decimal(12, 2)
+  imageUrl       String?   @map("image_url")
+  isActive       Boolean   @default(true) @map("is_active")
+  sortOrder      Int       @default(0) @map("sort_order")
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz
+
+  // Relations
+  store        Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  category     MenuCategory? @relation(fields: [categoryId], references: [id])
+  menuSetItems MenuSetItem[]
+  orderItems   OrderItem[]
+
+  @@index([storeId])
+  @@map("menu_sets")
+}
+
+/// 세트 구성 아이템
+model MenuSetItem {
+  id         String   @id @default(uuid()) @db.Uuid
+  setId      String   @map("set_id") @db.Uuid
+  itemId     String   @map("item_id") @db.Uuid
+  qty        Int      @default(1)
+  isRequired Boolean  @default(true) @map("is_required")
+  sortOrder  Int      @default(0) @map("sort_order")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relations
+  set  MenuSet  @relation(fields: [setId], references: [id], onDelete: Cascade)
+  item MenuItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@map("menu_set_items")
+}
+
+/// 옵션 그룹 (사이즈, 토핑 등)
+model MenuOptionGroup {
+  id         String   @id @default(uuid()) @db.Uuid
+  storeId    String   @map("store_id") @db.Uuid
+  name       String
+  minSelect  Int      @default(0) @map("min_select")
+  maxSelect  Int      @default(1) @map("max_select")
+  isRequired Boolean  @default(false) @map("is_required")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  store                Store                 @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  options              MenuOption[]
+  menuItemOptionGroups MenuItemOptionGroup[]
+
+  @@map("menu_option_groups")
+}
+
+/// 옵션 항목
+model MenuOption {
+  id         String   @id @default(uuid()) @db.Uuid
+  groupId    String   @map("group_id") @db.Uuid
+  name       String
+  priceDelta Decimal  @default(0) @map("price_delta") @db.Decimal(12, 2)
+  isActive   Boolean  @default(true) @map("is_active")
+  isDefault  Boolean  @default(false) @map("is_default")
+  sortOrder  Int      @default(0) @map("sort_order")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  group            MenuOptionGroup   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  orderItemOptions OrderItemOption[]
+
+  @@map("menu_options")
+}
+
+/// 메뉴-옵션그룹 연결
+model MenuItemOptionGroup {
+  id        String   @id @default(uuid()) @db.Uuid
+  itemId    String   @map("item_id") @db.Uuid
+  groupId   String   @map("group_id") @db.Uuid
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relations
+  item  MenuItem        @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  group MenuOptionGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([itemId, groupId])
+  @@map("menu_item_option_groups")
+}
+
+/// 가격 규칙 (시간대별 가격 등)
+model PriceRule {
+  id        String    @id @default(uuid()) @db.Uuid
+  storeId   String    @map("store_id") @db.Uuid
+  itemId    String?   @map("item_id") @db.Uuid
+  ruleType  String    @map("rule_type")
+  startAt   DateTime? @map("start_at") @db.Timestamptz
+  endAt     DateTime? @map("end_at") @db.Timestamptz
+  price     Decimal   @db.Decimal(12, 2)
+  isActive  Boolean   @default(true) @map("is_active")
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  store Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  item  MenuItem? @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@map("price_rules")
+}
+
+// ============================================
+// TABLE
+// ============================================
+
+/// 테이블 구역
+model TableZone {
+  id        String   @id @default(uuid()) @db.Uuid
+  storeId   String   @map("store_id") @db.Uuid
+  name      String
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  store  Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  tables Table[]
+
+  @@map("table_zones")
+}
+
+/// 테이블
+model Table {
+  id             String     @id @default(uuid()) @db.Uuid
+  storeId        String     @map("store_id") @db.Uuid
+  zoneId         String?    @map("zone_id") @db.Uuid
+  name           String
+  capacity       Int        @default(0)
+  posX           Decimal    @default(0) @map("pos_x") @db.Decimal(10, 2)
+  posY           Decimal    @default(0) @map("pos_y") @db.Decimal(10, 2)
+  width          Decimal    @default(80) @db.Decimal(10, 2)
+  height         Decimal    @default(80) @db.Decimal(10, 2)
+  shape          TableShape @default(RECT)
+  isActive       Boolean    @default(true) @map("is_active")
+  currentOrderId String?    @map("current_order_id") @db.Uuid
+  version        Int        @default(1)
+  createdAt      DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime   @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  store   Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  zone    TableZone? @relation(fields: [zoneId], references: [id])
+  orders  Order[]
+  qrCodes QrCode[]
+
+  @@index([storeId])
+  @@map("tables")
+}
+
+/// QR 코드 (테이블 오더용)
+model QrCode {
+  id        String    @id @default(uuid()) @db.Uuid
+  storeId   String    @map("store_id") @db.Uuid
+  tableId   String?   @map("table_id") @db.Uuid
+  code      String    @unique
+  type      QrType    @default(TABLE_ORDER)
+  isActive  Boolean   @default(true) @map("is_active")
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  expiresAt DateTime? @map("expires_at") @db.Timestamptz
+
+  // Relations
+  store Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  table Table? @relation(fields: [tableId], references: [id])
+
+  @@map("qr_codes")
+}
+
+// ============================================
+// ORDER
+// ============================================
+
+/// 주문
+model Order {
+  id             String       @id @default(uuid()) @db.Uuid
+  storeId        String       @map("store_id") @db.Uuid
+  deviceId       String?      @map("device_id") @db.Uuid
+  tableId        String?      @map("table_id") @db.Uuid
+  customerId     String?      @map("customer_id") @db.Uuid
+  orderNo        String       @map("order_no")
+  status         OrderStatus  @default(OPEN)
+  channel        OrderChannel @default(POS)
+  subtotal       Decimal      @default(0) @db.Decimal(12, 2)
+  discount       Decimal      @default(0) @db.Decimal(12, 2)
+  couponDiscount Decimal      @default(0) @map("coupon_discount") @db.Decimal(12, 2)
+  tax            Decimal      @default(0) @db.Decimal(12, 2)
+  total          Decimal      @default(0) @db.Decimal(12, 2)
+  paidAmount     Decimal      @default(0) @map("paid_amount") @db.Decimal(12, 2)
+  changeAmount   Decimal      @default(0) @map("change_amount") @db.Decimal(12, 2)
+  note           String?
+  version        Int          @default(1)
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime     @updatedAt @map("updated_at") @db.Timestamptz
+  closedAt       DateTime?    @map("closed_at") @db.Timestamptz
+
+  // Relations
+  store        Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  device       Device?       @relation(fields: [deviceId], references: [id])
+  table        Table?        @relation(fields: [tableId], references: [id])
+  customer     Customer?     @relation(fields: [customerId], references: [id])
+  orderItems   OrderItem[]
+  payments     Payment[]
+  receipts     Receipt[]
+  loyaltyTxns  LoyaltyTxn[]
+  couponUsages CouponUsage[]
+
+  @@unique([storeId, orderNo])
+  @@index([storeId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+/// 주문 항목
+model OrderItem {
+  id              String          @id @default(uuid()) @db.Uuid
+  orderId         String          @map("order_id") @db.Uuid
+  itemId          String?         @map("item_id") @db.Uuid
+  setId           String?         @map("set_id") @db.Uuid
+  nameSnapshot    String          @map("name_snapshot")
+  qty             Int             @default(1)
+  unitPrice       Decimal         @map("unit_price") @db.Decimal(12, 2)
+  totalPrice      Decimal         @map("total_price") @db.Decimal(12, 2)
+  status          OrderItemStatus @default(ORDERED)
+  note            String?
+  sentToKitchenAt DateTime?       @map("sent_to_kitchen_at") @db.Timestamptz
+  servedAt        DateTime?       @map("served_at") @db.Timestamptz
+  createdAt       DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime        @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  order   Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  item    MenuItem?         @relation(fields: [itemId], references: [id])
+  set     MenuSet?          @relation(fields: [setId], references: [id])
+  options OrderItemOption[]
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+/// 주문 항목 옵션
+model OrderItemOption {
+  id           String   @id @default(uuid()) @db.Uuid
+  orderItemId  String   @map("order_item_id") @db.Uuid
+  optionId     String?  @map("option_id") @db.Uuid
+  nameSnapshot String   @map("name_snapshot")
+  priceDelta   Decimal  @default(0) @map("price_delta") @db.Decimal(12, 2)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relations
+  orderItem OrderItem   @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  option    MenuOption? @relation(fields: [optionId], references: [id])
+
+  @@map("order_item_options")
+}
+
+// ============================================
+// PAYMENT
+// ============================================
+
+/// 결제
+model Payment {
+  id                String        @id @default(uuid()) @db.Uuid
+  orderId           String        @map("order_id") @db.Uuid
+  method            PaymentMethod
+  amount            Decimal       @db.Decimal(12, 2)
+  status            PaymentStatus @default(PENDING)
+  approvedAt        DateTime?     @map("approved_at") @db.Timestamptz
+  vanProvider       String?       @map("van_provider")
+  vanTxId           String?       @map("van_tx_id")
+  cardBrand         String?       @map("card_brand")
+  cardNumberMasked  String?       @map("card_number_masked")
+  approvalCode      String?       @map("approval_code")
+  installmentMonths Int           @default(0) @map("installment_months")
+  createdAt         DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  order    Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  attempts PaymentAttempt[]
+  refunds  Refund[]
+
+  @@index([orderId])
+  @@index([vanTxId])
+  @@map("payments")
+}
+
+/// 결제 시도 기록
+model PaymentAttempt {
+  id              String        @id @default(uuid()) @db.Uuid
+  paymentId       String        @map("payment_id") @db.Uuid
+  requestPayload  Json?         @map("request_payload")
+  responsePayload Json?         @map("response_payload")
+  status          PaymentStatus
+  errorCode       String?       @map("error_code")
+  errorMessage    String?       @map("error_message")
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relations
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@map("payment_attempts")
+}
+
+/// 환불
+model Refund {
+  id         String    @id @default(uuid()) @db.Uuid
+  paymentId  String    @map("payment_id") @db.Uuid
+  amount     Decimal   @db.Decimal(12, 2)
+  reason     String?
+  status     String    @default("REQUESTED")
+  approvedAt DateTime? @map("approved_at") @db.Timestamptz
+  vanTxId    String?   @map("van_tx_id")
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relations
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@map("refunds")
+}
+
+/// 영수증
+model Receipt {
+  id        String      @id @default(uuid()) @db.Uuid
+  orderId   String      @map("order_id") @db.Uuid
+  receiptNo String      @map("receipt_no")
+  type      ReceiptType @default(CUSTOMER)
+  printedAt DateTime?   @map("printed_at") @db.Timestamptz
+  printerId String?     @map("printer_id")
+  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relations
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("receipts")
+}
+
+// ============================================
+// INVENTORY
+// ============================================
+
+/// 재고 품목
+model InventoryItem {
+  id         String   @id @default(uuid()) @db.Uuid
+  storeId    String   @map("store_id") @db.Uuid
+  name       String
+  sku        String?
+  unit       String?
+  currentQty Decimal  @default(0) @map("current_qty") @db.Decimal(12, 3)
+  minQty     Decimal? @map("min_qty") @db.Decimal(12, 3)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  store          Store           @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  stockMovements StockMovement[]
+
+  @@index([storeId])
+  @@map("inventory_items")
+}
+
+/// 재고 이동
+model StockMovement {
+  id              String            @id @default(uuid()) @db.Uuid
+  inventoryItemId String            @map("inventory_item_id") @db.Uuid
+  type            StockMovementType
+  qty             Decimal           @db.Decimal(12, 3)
+  reason          String?
+  createdBy       String?           @map("created_by") @db.Uuid
+  createdAt       DateTime          @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relations
+  inventoryItem InventoryItem @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
+  creator       User?         @relation(fields: [createdBy], references: [id])
+
+  @@map("stock_movements")
+}
+
+// ============================================
+// CUSTOMER & MARKETING
+// ============================================
+
+/// 고객
+model Customer {
+  id          String    @id @default(uuid()) @db.Uuid
+  storeId     String?   @map("store_id") @db.Uuid
+  franchiseId String?   @map("franchise_id") @db.Uuid
+  phone       String?
+  name        String?
+  email       String?
+  points      Int       @default(0)
+  totalSpent  Decimal   @default(0) @map("total_spent") @db.Decimal(12, 2)
+  visitCount  Int       @default(0) @map("visit_count")
+  lastVisitAt DateTime? @map("last_visit_at") @db.Timestamptz
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz
+
+  // Relations
+  store        Store?        @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  franchise    Franchise?    @relation(fields: [franchiseId], references: [id])
+  orders       Order[]
+  loyaltyTxns  LoyaltyTxn[]
+  couponUsages CouponUsage[]
+
+  @@index([storeId])
+  @@index([phone])
+  @@map("customers")
+}
+
+/// 포인트 거래
+model LoyaltyTxn {
+  id          String         @id @default(uuid()) @db.Uuid
+  customerId  String         @map("customer_id") @db.Uuid
+  orderId     String?        @map("order_id") @db.Uuid
+  points      Int
+  type        LoyaltyTxnType
+  description String?
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relations
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  order    Order?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@map("loyalty_txns")
+}
+
+/// 쿠폰
+model Coupon {
+  id             String     @id @default(uuid()) @db.Uuid
+  storeId        String?    @map("store_id") @db.Uuid
+  franchiseId    String?    @map("franchise_id") @db.Uuid
+  code           String     @unique
+  name           String
+  type           CouponType
+  value          Decimal    @db.Decimal(12, 2)
+  minOrderAmount Decimal    @default(0) @map("min_order_amount") @db.Decimal(12, 2)
+  maxDiscount    Decimal?   @map("max_discount") @db.Decimal(12, 2)
+  validFrom      DateTime   @map("valid_from") @db.Timestamptz
+  validUntil     DateTime   @map("valid_until") @db.Timestamptz
+  usageLimit     Int?       @map("usage_limit")
+  usageCount     Int        @default(0) @map("usage_count")
+  isActive       Boolean    @default(true) @map("is_active")
+  createdAt      DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime   @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  store        Store?        @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  franchise    Franchise?    @relation(fields: [franchiseId], references: [id])
+  couponUsages CouponUsage[]
+
+  @@map("coupons")
+}
+
+/// 쿠폰 사용 이력
+model CouponUsage {
+  id             String   @id @default(uuid()) @db.Uuid
+  couponId       String   @map("coupon_id") @db.Uuid
+  orderId        String   @map("order_id") @db.Uuid
+  customerId     String?  @map("customer_id") @db.Uuid
+  discountAmount Decimal  @map("discount_amount") @db.Decimal(12, 2)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relations
+  coupon   Coupon    @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  order    Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  customer Customer? @relation(fields: [customerId], references: [id])
+
+  @@map("coupon_usages")
+}
+
+// ============================================
+// SYSTEM
+// ============================================
+
+/// 감사 로그
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  storeId    String?  @map("store_id") @db.Uuid
+  userId     String?  @map("user_id") @db.Uuid
+  deviceId   String?  @map("device_id") @db.Uuid
+  action     String
+  entityType String   @map("entity_type")
+  entityId   String?  @map("entity_id") @db.Uuid
+  beforeData Json?    @map("before_data")
+  afterData  Json?    @map("after_data")
+  ipAddress  String?  @map("ip_address")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relations
+  store  Store?  @relation(fields: [storeId], references: [id], onDelete: SetNull)
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  device Device? @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+
+  @@index([storeId])
+  @@index([createdAt])
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
