@@ -1,6 +1,12 @@
+import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
+import * as bcrypt from 'bcrypt';
 
-const prisma = new PrismaClient();
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   const franchiseName = 'Demo Franchise';
@@ -8,6 +14,8 @@ async function main() {
   const storeName = '강남점';
   const deviceCode = 'POS-001';
   const userPhone = '01012345678';
+  const defaultPin = '1234';
+  const pinHash = await bcrypt.hash(defaultPin, 10);
 
   const franchise =
     (await prisma.franchise.findFirst({ where: { name: franchiseName } })) ??
@@ -47,7 +55,7 @@ async function main() {
       roleId: ownerRole.id,
       name: '관리자',
       phone: userPhone,
-      pinHash: null,
+      pinHash,
     },
   });
 
@@ -83,5 +91,6 @@ main()
     process.exitCode = 1;
   })
   .finally(async () => {
-    await prisma.();
+    await prisma.$disconnect();
+    await pool.end();
   });
