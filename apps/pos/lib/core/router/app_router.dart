@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/auth/screens/login_screen.dart';
+import '../../features/devices/screens/device_list_screen.dart';
 import '../../features/pos/screens/pos_screen.dart';
 import '../../features/payment/screens/payment_screen.dart';
 import '../../features/order_complete/screens/order_complete_screen.dart';
@@ -43,6 +44,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             totalAmount: extra?['totalAmount'] as int? ?? 0,
           );
         },
+      ),
+      GoRoute(
+        path: '/devices',
+        builder: (context, state) => const DeviceListScreen(),
       ),
       GoRoute(
         path: '/order-complete',

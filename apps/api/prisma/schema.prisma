@@ -50,6 +50,13 @@ enum OrderChannel {
   DELIVERY
 }
 
+enum OrderPriority {
+  URGENT
+  HIGH
+  NORMAL
+  LOW
+}
+
 enum OrderItemStatus {
   ORDERED
   COOKING
@@ -531,8 +538,9 @@ model Order {
   customerId     String?      @map("customer_id") @db.Uuid
   orderNo        String       @map("order_no")
   status         OrderStatus  @default(OPEN)
-  channel        OrderChannel @default(POS)
-  subtotal       Decimal      @default(0) @db.Decimal(12, 2)
+  channel        OrderChannel  @default(POS)
+  priority       OrderPriority @default(NORMAL)
+  subtotal       Decimal       @default(0) @db.Decimal(12, 2)
   discount       Decimal      @default(0) @db.Decimal(12, 2)
   couponDiscount Decimal      @default(0) @map("coupon_discount") @db.Decimal(12, 2)
   tax            Decimal      @default(0) @db.Decimal(12, 2)
@@ -560,6 +568,7 @@ model Order {
   @@index([storeId])
   @@index([status])
   @@index([createdAt])
+  @@index([storeId, priority])
   @@map("orders")
 }
 

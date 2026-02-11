@@ -18,6 +18,13 @@ enum OrderChannel {
   DELIVERY = 'DELIVERY',
 }
 
+enum OrderPriority {
+  URGENT = 'URGENT',
+  HIGH = 'HIGH',
+  NORMAL = 'NORMAL',
+  LOW = 'LOW',
+}
+
 class CreateOrderOptionDto {
   @IsUUID()
   optionId: string;
@@ -59,6 +66,10 @@ export class CreateOrderDto {
   @IsEnum(OrderChannel)
   @IsOptional()
   channel?: OrderChannel;
+
+  @IsEnum(OrderPriority)
+  @IsOptional()
+  priority?: OrderPriority;
 
   @IsString()
   @IsOptional()

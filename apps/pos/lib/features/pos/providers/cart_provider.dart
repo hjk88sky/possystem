@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/cart_item.dart';
 import '../models/menu_item.dart';
+import '../models/order.dart';
 
 class CartNotifier extends StateNotifier<List<CartItem>> {
   CartNotifier() : super([]);
@@ -40,8 +41,27 @@ class CartNotifier extends StateNotifier<List<CartItem>> {
   }
 }
 
+/// 주문 중요도 상태 관리
+class PriorityNotifier extends StateNotifier<OrderPriority> {
+  PriorityNotifier() : super(OrderPriority.normal);
+
+  void setPriority(OrderPriority priority) {
+    state = priority;
+  }
+
+  void reset() {
+    state = OrderPriority.normal;
+  }
+}
+
 final cartProvider = StateNotifierProvider<CartNotifier, List<CartItem>>((ref) {
   return CartNotifier();
+});
+
+/// 현재 선택된 주문 중요도
+final cartPriorityProvider =
+    StateNotifierProvider<PriorityNotifier, OrderPriority>((ref) {
+  return PriorityNotifier();
 });
 
 final cartSubtotalProvider = Provider<int>((ref) {

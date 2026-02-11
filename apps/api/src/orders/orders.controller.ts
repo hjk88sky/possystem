@@ -5,11 +5,13 @@ import {
   Patch,
   Param,
   Body,
+  Query,
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { GetOrdersQueryDto } from './dto/get-orders-query.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @Controller('orders')
@@ -25,8 +27,11 @@ export class OrdersController {
   }
 
   @Get()
-  findAll(@CurrentUser('storeId') storeId: string) {
-    return this.ordersService.findAll(storeId);
+  findAll(
+    @CurrentUser('storeId') storeId: string,
+    @Query() query: GetOrdersQueryDto,
+  ) {
+    return this.ordersService.findAll(storeId, query);
   }
 
   @Get(':id')

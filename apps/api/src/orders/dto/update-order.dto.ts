@@ -7,10 +7,21 @@ enum OrderStatus {
   VOID = 'VOID',
 }
 
+enum OrderPriority {
+  URGENT = 'URGENT',
+  HIGH = 'HIGH',
+  NORMAL = 'NORMAL',
+  LOW = 'LOW',
+}
+
 export class UpdateOrderDto {
   @IsEnum(OrderStatus)
   @IsOptional()
   status?: OrderStatus;
+
+  @IsEnum(OrderPriority)
+  @IsOptional()
+  priority?: OrderPriority;
 
   @IsString()
   @IsOptional()

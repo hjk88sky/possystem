@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../models/order.dart';
 import '../providers/cart_provider.dart';
 import '../providers/order_provider.dart';
 import 'cart_item_row.dart';
 import 'cart_summary.dart';
+import 'priority_selector.dart';
 
 class CartPanel extends ConsumerWidget {
   const CartPanel({super.key});
@@ -13,6 +15,7 @@ class CartPanel extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final cartItems = ref.watch(cartProvider);
     final orderState = ref.watch(orderProvider);
+    final selectedPriority = ref.watch(cartPriorityProvider);
     final theme = Theme.of(context);
 
     ref.listen<OrderState>(orderProvider, (prev, next) {
@@ -54,12 +57,23 @@ class CartPanel extends ConsumerWidget {
                 const Spacer(),
                 if (cartItems.isNotEmpty)
                   TextButton(
-                    onPressed: () => ref.read(cartProvider.notifier).clear(),
+                    onPressed: () {
+                      ref.read(cartProvider.notifier).clear();
+                      ref.read(cartPriorityProvider.notifier).reset();
+                    },
                     child: Text('전체 삭제',
                         style: TextStyle(color: theme.colorScheme.error)),
                   ),
               ],
             ),
+          ),
+
+          // Priority selector
+          PrioritySelector(
+            selected: selectedPriority,
+            onChanged: (priority) {
+              ref.read(cartPriorityProvider.notifier).setPriority(priority);
+            },
           ),
 
           // Cart items list
@@ -141,11 +155,14 @@ class CartPanel extends ConsumerWidget {
   Future<void> _createOrder(BuildContext context, WidgetRef ref) async {
     final cartItems = ref.read(cartProvider);
     final total = ref.read(cartTotalProvider);
-    final order =
-        await ref.read(orderProvider.notifier).createOrder(cartItems);
+    final priority = ref.read(cartPriorityProvider);
+    final order = await ref
+        .read(orderProvider.notifier)
+        .createOrder(cartItems, priority: priority);
 
     if (order != null && context.mounted) {
       ref.read(cartProvider.notifier).clear();
+      ref.read(cartPriorityProvider.notifier).reset();
       context.push('/payment', extra: {
         'orderId': order.id,
         'totalAmount': total,

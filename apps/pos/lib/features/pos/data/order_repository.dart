@@ -13,9 +13,13 @@ class OrderRepository {
 
   OrderRepository(this._dio);
 
-  Future<Order> createOrder(List<CartItem> cartItems) async {
+  Future<Order> createOrder(
+    List<CartItem> cartItems, {
+    OrderPriority priority = OrderPriority.normal,
+  }) async {
     final response = await _dio.post('/orders', data: {
       'channel': 'POS',
+      'priority': priority.apiValue,
       'items': cartItems
           .map((e) => {
                 'itemId': e.menuItem.id,
@@ -31,5 +35,23 @@ class OrderRepository {
     final response = await _dio.get('/orders/$orderId');
     final data = response.data['data'] ?? response.data;
     return Order.fromJson(data);
+  }
+
+  Future<List<Order>> getOrders({
+    OrderPriority? priority,
+    String? status,
+  }) async {
+    final queryParams = <String, dynamic>{};
+    if (priority != null) queryParams['priority'] = priority.apiValue;
+    if (status != null) queryParams['status'] = status;
+
+    final response = await _dio.get('/orders', queryParameters: queryParams);
+    final data = response.data['data'] ?? response.data;
+    if (data is List) {
+      return data
+          .map((e) => Order.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+    return [];
   }
 }

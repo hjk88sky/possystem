@@ -1,4 +1,4 @@
-import { IsString, IsEnum, IsOptional } from 'class-validator';
+import { IsString, IsEnum, IsOptional, IsObject } from 'class-validator';
 
 enum DeviceStatus {
   ACTIVE = 'ACTIVE',
@@ -18,4 +18,12 @@ export class UpdateDeviceDto {
   @IsString()
   @IsOptional()
   appVersion?: string;
+
+  @IsString()
+  @IsOptional()
+  hardwareModel?: string;
+
+  @IsObject()
+  @IsOptional()
+  configJson?: Record<string, any>;
 }

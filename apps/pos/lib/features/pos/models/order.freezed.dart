@@ -30,6 +30,7 @@ mixin _$Order {
   @JsonKey(name: 'tax_amount')
   int get taxAmount => throw _privateConstructorUsedError;
   List<OrderItem> get items => throw _privateConstructorUsedError;
+  OrderPriority get priority => throw _privateConstructorUsedError;
   @JsonKey(name: 'created_at')
   String? get createdAt => throw _privateConstructorUsedError;
 
@@ -55,6 +56,7 @@ abstract class $OrderCopyWith<$Res> {
       @JsonKey(name: 'total_amount') int totalAmount,
       @JsonKey(name: 'tax_amount') int taxAmount,
       List<OrderItem> items,
+      OrderPriority priority,
       @JsonKey(name: 'created_at') String? createdAt});
 }
 
@@ -80,6 +82,7 @@ class _$OrderCopyWithImpl<$Res, $Val extends Order>
     Object? totalAmount = null,
     Object? taxAmount = null,
     Object? items = null,
+    Object? priority = null,
     Object? createdAt = freezed,
   }) {
     return _then(_value.copyWith(
@@ -111,6 +114,10 @@ class _$OrderCopyWithImpl<$Res, $Val extends Order>
           ? _value.items
           : items // ignore: cast_nullable_to_non_nullable
               as List<OrderItem>,
+      priority: null == priority
+          ? _value.priority
+          : priority // ignore: cast_nullable_to_non_nullable
+              as OrderPriority,
       createdAt: freezed == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -134,6 +141,7 @@ abstract class _$$OrderImplCopyWith<$Res> implements $OrderCopyWith<$Res> {
       @JsonKey(name: 'total_amount') int totalAmount,
       @JsonKey(name: 'tax_amount') int taxAmount,
       List<OrderItem> items,
+      OrderPriority priority,
       @JsonKey(name: 'created_at') String? createdAt});
 }
 
@@ -157,6 +165,7 @@ class __$$OrderImplCopyWithImpl<$Res>
     Object? totalAmount = null,
     Object? taxAmount = null,
     Object? items = null,
+    Object? priority = null,
     Object? createdAt = freezed,
   }) {
     return _then(_$OrderImpl(
@@ -188,6 +197,10 @@ class __$$OrderImplCopyWithImpl<$Res>
           ? _value._items
           : items // ignore: cast_nullable_to_non_nullable
               as List<OrderItem>,
+      priority: null == priority
+          ? _value.priority
+          : priority // ignore: cast_nullable_to_non_nullable
+              as OrderPriority,
       createdAt: freezed == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -207,6 +220,7 @@ class _$OrderImpl implements _Order {
       @JsonKey(name: 'total_amount') required this.totalAmount,
       @JsonKey(name: 'tax_amount') this.taxAmount = 0,
       final List<OrderItem> items = const [],
+      this.priority = OrderPriority.normal,
       @JsonKey(name: 'created_at') this.createdAt})
       : _items = items;
 
@@ -238,12 +252,15 @@ class _$OrderImpl implements _Order {
   }
 
   @override
+  @JsonKey()
+  final OrderPriority priority;
+  @override
   @JsonKey(name: 'created_at')
   final String? createdAt;
 
   @override
   String toString() {
-    return 'Order(id: $id, orderNumber: $orderNumber, status: $status, channel: $channel, totalAmount: $totalAmount, taxAmount: $taxAmount, items: $items, createdAt: $createdAt)';
+    return 'Order(id: $id, orderNumber: $orderNumber, status: $status, channel: $channel, totalAmount: $totalAmount, taxAmount: $taxAmount, items: $items, priority: $priority, createdAt: $createdAt)';
   }
 
   @override
@@ -261,6 +278,8 @@ class _$OrderImpl implements _Order {
             (identical(other.taxAmount, taxAmount) ||
                 other.taxAmount == taxAmount) &&
             const DeepCollectionEquality().equals(other._items, _items) &&
+            (identical(other.priority, priority) ||
+                other.priority == priority) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt));
   }
@@ -276,6 +295,7 @@ class _$OrderImpl implements _Order {
       totalAmount,
       taxAmount,
       const DeepCollectionEquality().hash(_items),
+      priority,
       createdAt);
 
   /// Create a copy of Order
@@ -303,6 +323,7 @@ abstract class _Order implements Order {
       @JsonKey(name: 'total_amount') required final int totalAmount,
       @JsonKey(name: 'tax_amount') final int taxAmount,
       final List<OrderItem> items,
+      final OrderPriority priority,
       @JsonKey(name: 'created_at') final String? createdAt}) = _$OrderImpl;
 
   factory _Order.fromJson(Map<String, dynamic> json) = _$OrderImpl.fromJson;
@@ -324,6 +345,8 @@ abstract class _Order implements Order {
   int get taxAmount;
   @override
   List<OrderItem> get items;
+  @override
+  OrderPriority get priority;
   @override
   @JsonKey(name: 'created_at')
   String? get createdAt;

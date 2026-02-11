@@ -17,6 +17,9 @@ _$OrderImpl _$$OrderImplFromJson(Map<String, dynamic> json) => _$OrderImpl(
               ?.map((e) => OrderItem.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
+      priority:
+          $enumDecodeNullable(_$OrderPriorityEnumMap, json['priority']) ??
+              OrderPriority.normal,
       createdAt: json['created_at'] as String?,
     );
 
@@ -29,5 +32,13 @@ Map<String, dynamic> _$$OrderImplToJson(_$OrderImpl instance) =>
       'total_amount': instance.totalAmount,
       'tax_amount': instance.taxAmount,
       'items': instance.items,
+      'priority': _$OrderPriorityEnumMap[instance.priority]!,
       'created_at': instance.createdAt,
     };
+
+const _$OrderPriorityEnumMap = {
+  OrderPriority.urgent: 'URGENT',
+  OrderPriority.high: 'HIGH',
+  OrderPriority.normal: 'NORMAL',
+  OrderPriority.low: 'LOW',
+};

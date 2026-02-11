@@ -2,11 +2,13 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { GetOrdersQueryDto } from './dto/get-orders-query.dto';
 
 @Injectable()
 export class OrdersService {
@@ -88,6 +90,7 @@ export class OrdersService {
           tableId: dto.tableId,
           customerId: dto.customerId,
           channel: dto.channel as any,
+          priority: (dto.priority as any) ?? 'NORMAL',
           note: dto.note,
           subtotal,
           tax,
@@ -116,15 +119,44 @@ export class OrdersService {
     });
   }
 
-  async findAll(storeId: string) {
-    return this.prisma.order.findMany({
-      where: { storeId },
-      include: {
-        orderItems: true,
-        payments: true,
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+  async findAll(storeId: string, query?: GetOrdersQueryDto) {
+    const { priority, status, sortBy, order, limit = 20, offset = 0 } = query ?? {};
+
+    const where: Prisma.OrderWhereInput = { storeId };
+    if (priority) {
+      where.priority = priority as any;
+    }
+    if (status) {
+      where.status = status as any;
+    }
+
+    // sortBy=priority: priority asc (URGENT first) + createdAt asc
+    // sortBy=createdAt (default): createdAt desc
+    let orderBy: Prisma.OrderOrderByWithRelationInput[];
+    if (sortBy === 'priority') {
+      orderBy = [
+        { priority: order ?? 'asc' },
+        { createdAt: 'asc' },
+      ];
+    } else {
+      orderBy = [{ createdAt: order ?? 'desc' }];
+    }
+
+    const [data, total] = await Promise.all([
+      this.prisma.order.findMany({
+        where,
+        include: {
+          orderItems: true,
+          payments: true,
+        },
+        orderBy,
+        take: limit,
+        skip: offset,
+      }),
+      this.prisma.order.count({ where }),
+    ]);
+
+    return { data, total, limit, offset };
   }
 
   async findOne(storeId: string, id: string) {
@@ -154,10 +186,19 @@ export class OrdersService {
       });
     }
 
+    // Priority cannot be changed on finalized orders
+    const finalizedStatuses = ['PAID', 'CANCELLED', 'VOID'];
+    if (dto.priority && finalizedStatuses.includes(order.status)) {
+      throw new UnprocessableEntityException(
+        `Cannot change priority of an order with status ${order.status}`,
+      );
+    }
+
     return this.prisma.order.update({
       where: { id },
       data: {
         status: dto.status as any,
+        priority: dto.priority as any,
         note: dto.note,
         version: { increment: 1 },
         ...(dto.status === 'CANCELLED' || dto.status === 'VOID'
