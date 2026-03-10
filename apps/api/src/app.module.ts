@@ -10,6 +10,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { TablesModule } from './tables/tables.module';
 import { DevicesModule } from './devices/devices.module';
 import { RealtimeModule } from './realtime/realtime.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { RealtimeModule } from './realtime/realtime.module';
     PaymentsModule,
     TablesModule,
     DevicesModule,
+    ReportsModule,
   ],
 })
 export class AppModule {}
