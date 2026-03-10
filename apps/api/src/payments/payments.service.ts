@@ -27,7 +27,7 @@ export class PaymentsService {
       const amount = new Prisma.Decimal(dto.amount);
 
       // Mock VAN approval for card payments
-      const mockApproval = this.mockVanApproval(dto.method as string, amount);
+      const mockApproval = this.mockVanApproval(dto.method as string);
 
       const payment = await tx.payment.create({
         data: {
@@ -134,7 +134,7 @@ export class PaymentsService {
     });
   }
 
-  private mockVanApproval(method: string, amount: Prisma.Decimal) {
+  private mockVanApproval(method: string) {
     if (method === 'CASH') {
       return {
         status: 'APPROVED',

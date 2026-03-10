@@ -5,7 +5,6 @@ import {
   IsEnum,
   IsArray,
   ValidateNested,
-  IsNumber,
   IsInt,
   Min,
 } from 'class-validator';

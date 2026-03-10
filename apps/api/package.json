@@ -5,6 +5,9 @@
   "description": "POS backend API (NestJS)",
   "license": "UNLICENSED",
   "scripts": {
+    "postinstall": "npm run prisma:generate",
+    "prisma:generate": "prisma generate",
+    "prebuild": "npm run prisma:generate",
     "dev": "nest start --watch",
     "build": "nest build",
     "start": "node dist/main.js",
@@ -39,6 +42,8 @@
     "@types/node": "^20.11.30",
     "@types/passport-jwt": "^4.0.1",
     "@types/pg": "^8.16.0",
+    "@typescript-eslint/eslint-plugin": "^8.57.0",
+    "@typescript-eslint/parser": "^8.57.0",
     "dotenv": "^17.2.4",
     "eslint": "^8.57.0",
     "prettier": "^3.2.5",
