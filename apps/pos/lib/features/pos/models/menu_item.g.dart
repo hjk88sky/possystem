@@ -8,13 +8,13 @@ part of 'menu_item.dart';
 
 _$MenuItemImpl _$$MenuItemImplFromJson(Map<String, dynamic> json) =>
     _$MenuItemImpl(
-      id: (json['id'] as num).toInt(),
+      id: parseStringId(json['id']),
       name: json['name'] as String,
-      price: (json['price'] as num).toInt(),
-      categoryId: (json['category_id'] as num).toInt(),
-      imageUrl: json['image_url'] as String?,
-      available: json['available'] as bool? ?? true,
-      sortOrder: (json['sort_order'] as num?)?.toInt() ?? 0,
+      price: parseMoneyToInt(json['price']),
+      categoryId: parseNullableStringId(json['categoryId']),
+      imageUrl: json['imageUrl'] as String?,
+      available: _readAvailable(json, 'available') as bool? ?? true,
+      sortOrder: (json['sortOrder'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$$MenuItemImplToJson(_$MenuItemImpl instance) =>
@@ -22,8 +22,8 @@ Map<String, dynamic> _$$MenuItemImplToJson(_$MenuItemImpl instance) =>
       'id': instance.id,
       'name': instance.name,
       'price': instance.price,
-      'category_id': instance.categoryId,
-      'image_url': instance.imageUrl,
+      'categoryId': instance.categoryId,
+      'imageUrl': instance.imageUrl,
       'available': instance.available,
-      'sort_order': instance.sortOrder,
+      'sortOrder': instance.sortOrder,
     };

@@ -8,12 +8,14 @@ import '../widgets/payment_method_selector.dart';
 import '../widgets/cash_input_pad.dart';
 
 class PaymentScreen extends ConsumerStatefulWidget {
-  final int orderId;
+  final String orderId;
+  final String orderNumber;
   final int totalAmount;
 
   const PaymentScreen({
     super.key,
     required this.orderId,
+    required this.orderNumber,
     required this.totalAmount,
   });
 
@@ -159,7 +161,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
     if (payment != null && mounted) {
       ref.read(paymentProvider.notifier).reset();
       context.go('/order-complete', extra: {
-        'orderNumber': 'ORD-${widget.orderId}',
+        'orderNumber': widget.orderNumber,
         'totalAmount': widget.totalAmount,
         'paymentMethod': methodStr,
         'changeAmount':

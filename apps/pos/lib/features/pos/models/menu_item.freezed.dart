@@ -20,15 +20,18 @@ MenuItem _$MenuItemFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$MenuItem {
-  int get id => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: parseStringId)
+  String get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: parseMoneyToInt)
   int get price => throw _privateConstructorUsedError;
-  @JsonKey(name: 'category_id')
-  int get categoryId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'image_url')
+  @JsonKey(name: 'categoryId', fromJson: parseNullableStringId)
+  String? get categoryId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'imageUrl')
   String? get imageUrl => throw _privateConstructorUsedError;
+  @JsonKey(readValue: _readAvailable)
   bool get available => throw _privateConstructorUsedError;
-  @JsonKey(name: 'sort_order')
+  @JsonKey(name: 'sortOrder')
   int get sortOrder => throw _privateConstructorUsedError;
 
   /// Serializes this MenuItem to a JSON map.
@@ -47,13 +50,14 @@ abstract class $MenuItemCopyWith<$Res> {
       _$MenuItemCopyWithImpl<$Res, MenuItem>;
   @useResult
   $Res call(
-      {int id,
+      {@JsonKey(fromJson: parseStringId) String id,
       String name,
-      int price,
-      @JsonKey(name: 'category_id') int categoryId,
-      @JsonKey(name: 'image_url') String? imageUrl,
-      bool available,
-      @JsonKey(name: 'sort_order') int sortOrder});
+      @JsonKey(fromJson: parseMoneyToInt) int price,
+      @JsonKey(name: 'categoryId', fromJson: parseNullableStringId)
+      String? categoryId,
+      @JsonKey(name: 'imageUrl') String? imageUrl,
+      @JsonKey(readValue: _readAvailable) bool available,
+      @JsonKey(name: 'sortOrder') int sortOrder});
 }
 
 /// @nodoc
@@ -74,7 +78,7 @@ class _$MenuItemCopyWithImpl<$Res, $Val extends MenuItem>
     Object? id = null,
     Object? name = null,
     Object? price = null,
-    Object? categoryId = null,
+    Object? categoryId = freezed,
     Object? imageUrl = freezed,
     Object? available = null,
     Object? sortOrder = null,
@@ -83,7 +87,7 @@ class _$MenuItemCopyWithImpl<$Res, $Val extends MenuItem>
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
       name: null == name
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
@@ -92,10 +96,10 @@ class _$MenuItemCopyWithImpl<$Res, $Val extends MenuItem>
           ? _value.price
           : price // ignore: cast_nullable_to_non_nullable
               as int,
-      categoryId: null == categoryId
+      categoryId: freezed == categoryId
           ? _value.categoryId
           : categoryId // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String?,
       imageUrl: freezed == imageUrl
           ? _value.imageUrl
           : imageUrl // ignore: cast_nullable_to_non_nullable
@@ -121,13 +125,14 @@ abstract class _$$MenuItemImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {int id,
+      {@JsonKey(fromJson: parseStringId) String id,
       String name,
-      int price,
-      @JsonKey(name: 'category_id') int categoryId,
-      @JsonKey(name: 'image_url') String? imageUrl,
-      bool available,
-      @JsonKey(name: 'sort_order') int sortOrder});
+      @JsonKey(fromJson: parseMoneyToInt) int price,
+      @JsonKey(name: 'categoryId', fromJson: parseNullableStringId)
+      String? categoryId,
+      @JsonKey(name: 'imageUrl') String? imageUrl,
+      @JsonKey(readValue: _readAvailable) bool available,
+      @JsonKey(name: 'sortOrder') int sortOrder});
 }
 
 /// @nodoc
@@ -146,7 +151,7 @@ class __$$MenuItemImplCopyWithImpl<$Res>
     Object? id = null,
     Object? name = null,
     Object? price = null,
-    Object? categoryId = null,
+    Object? categoryId = freezed,
     Object? imageUrl = freezed,
     Object? available = null,
     Object? sortOrder = null,
@@ -155,7 +160,7 @@ class __$$MenuItemImplCopyWithImpl<$Res>
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
       name: null == name
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
@@ -164,10 +169,10 @@ class __$$MenuItemImplCopyWithImpl<$Res>
           ? _value.price
           : price // ignore: cast_nullable_to_non_nullable
               as int,
-      categoryId: null == categoryId
+      categoryId: freezed == categoryId
           ? _value.categoryId
           : categoryId // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String?,
       imageUrl: freezed == imageUrl
           ? _value.imageUrl
           : imageUrl // ignore: cast_nullable_to_non_nullable
@@ -188,34 +193,37 @@ class __$$MenuItemImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$MenuItemImpl implements _MenuItem {
   const _$MenuItemImpl(
-      {required this.id,
+      {@JsonKey(fromJson: parseStringId) required this.id,
       required this.name,
-      required this.price,
-      @JsonKey(name: 'category_id') required this.categoryId,
-      @JsonKey(name: 'image_url') this.imageUrl,
-      this.available = true,
-      @JsonKey(name: 'sort_order') this.sortOrder = 0});
+      @JsonKey(fromJson: parseMoneyToInt) required this.price,
+      @JsonKey(name: 'categoryId', fromJson: parseNullableStringId)
+      this.categoryId,
+      @JsonKey(name: 'imageUrl') this.imageUrl,
+      @JsonKey(readValue: _readAvailable) this.available = true,
+      @JsonKey(name: 'sortOrder') this.sortOrder = 0});
 
   factory _$MenuItemImpl.fromJson(Map<String, dynamic> json) =>
       _$$MenuItemImplFromJson(json);
 
   @override
-  final int id;
+  @JsonKey(fromJson: parseStringId)
+  final String id;
   @override
   final String name;
   @override
+  @JsonKey(fromJson: parseMoneyToInt)
   final int price;
   @override
-  @JsonKey(name: 'category_id')
-  final int categoryId;
+  @JsonKey(name: 'categoryId', fromJson: parseNullableStringId)
+  final String? categoryId;
   @override
-  @JsonKey(name: 'image_url')
+  @JsonKey(name: 'imageUrl')
   final String? imageUrl;
   @override
-  @JsonKey()
+  @JsonKey(readValue: _readAvailable)
   final bool available;
   @override
-  @JsonKey(name: 'sort_order')
+  @JsonKey(name: 'sortOrder')
   final int sortOrder;
 
   @override
@@ -264,33 +272,37 @@ class _$MenuItemImpl implements _MenuItem {
 
 abstract class _MenuItem implements MenuItem {
   const factory _MenuItem(
-      {required final int id,
+      {@JsonKey(fromJson: parseStringId) required final String id,
       required final String name,
-      required final int price,
-      @JsonKey(name: 'category_id') required final int categoryId,
-      @JsonKey(name: 'image_url') final String? imageUrl,
-      final bool available,
-      @JsonKey(name: 'sort_order') final int sortOrder}) = _$MenuItemImpl;
+      @JsonKey(fromJson: parseMoneyToInt) required final int price,
+      @JsonKey(name: 'categoryId', fromJson: parseNullableStringId)
+      final String? categoryId,
+      @JsonKey(name: 'imageUrl') final String? imageUrl,
+      @JsonKey(readValue: _readAvailable) final bool available,
+      @JsonKey(name: 'sortOrder') final int sortOrder}) = _$MenuItemImpl;
 
   factory _MenuItem.fromJson(Map<String, dynamic> json) =
       _$MenuItemImpl.fromJson;
 
   @override
-  int get id;
+  @JsonKey(fromJson: parseStringId)
+  String get id;
   @override
   String get name;
   @override
+  @JsonKey(fromJson: parseMoneyToInt)
   int get price;
   @override
-  @JsonKey(name: 'category_id')
-  int get categoryId;
+  @JsonKey(name: 'categoryId', fromJson: parseNullableStringId)
+  String? get categoryId;
   @override
-  @JsonKey(name: 'image_url')
+  @JsonKey(name: 'imageUrl')
   String? get imageUrl;
   @override
+  @JsonKey(readValue: _readAvailable)
   bool get available;
   @override
-  @JsonKey(name: 'sort_order')
+  @JsonKey(name: 'sortOrder')
   int get sortOrder;
 
   /// Create a copy of MenuItem

@@ -7,10 +7,12 @@ part of 'user.dart';
 // **************************************************************************
 
 _$UserImpl _$$UserImplFromJson(Map<String, dynamic> json) => _$UserImpl(
-      id: (json['id'] as num).toInt(),
+      id: parseStringId(json['id']),
       name: json['name'] as String,
-      role: json['role'] as String,
-      storeId: (json['store_id'] as num).toInt(),
+      role: json['role'] as String? ?? 'STAFF',
+      storeId: parseStringId(_readStoreId(json, 'storeId')),
+      storeName: _readStoreName(json, 'storeName') as String?,
+      phone: json['phone'] as String?,
     );
 
 Map<String, dynamic> _$$UserImplToJson(_$UserImpl instance) =>
@@ -18,5 +20,7 @@ Map<String, dynamic> _$$UserImplToJson(_$UserImpl instance) =>
       'id': instance.id,
       'name': instance.name,
       'role': instance.role,
-      'store_id': instance.storeId,
+      'storeId': instance.storeId,
+      'storeName': instance.storeName,
+      'phone': instance.phone,
     };

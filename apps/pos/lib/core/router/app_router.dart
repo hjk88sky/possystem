@@ -40,7 +40,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
           return PaymentScreen(
-            orderId: extra?['orderId'] as int? ?? 0,
+            orderId: extra?['orderId'] as String? ?? '',
+            orderNumber: extra?['orderNumber'] as String? ?? '',
             totalAmount: extra?['totalAmount'] as int? ?? 0,
           );
         },

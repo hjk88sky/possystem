@@ -8,20 +8,20 @@ part of 'payment.dart';
 
 _$PaymentImpl _$$PaymentImplFromJson(Map<String, dynamic> json) =>
     _$PaymentImpl(
-      id: (json['id'] as num).toInt(),
-      orderId: (json['order_id'] as num).toInt(),
+      id: parseStringId(json['id']),
+      orderId: parseStringId(json['orderId']),
       method: json['method'] as String,
-      amount: (json['amount'] as num).toInt(),
+      amount: parseMoneyToInt(json['amount']),
       status: json['status'] as String,
-      createdAt: json['created_at'] as String?,
+      createdAt: parseNullableString(json['createdAt']),
     );
 
 Map<String, dynamic> _$$PaymentImplToJson(_$PaymentImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'order_id': instance.orderId,
+      'orderId': instance.orderId,
       'method': instance.method,
       'amount': instance.amount,
       'status': instance.status,
-      'created_at': instance.createdAt,
+      'createdAt': instance.createdAt,
     };

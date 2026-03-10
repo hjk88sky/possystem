@@ -1,11 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../config/api_config.dart';
 
 class AuthInterceptor extends Interceptor {
-  final Ref _ref;
-
-  AuthInterceptor(this._ref);
+  AuthInterceptor(Ref _);
 
   @override
   void onRequest(
@@ -54,7 +53,7 @@ class AuthInterceptor extends Interceptor {
 
       final dio = Dio();
       final response = await dio.post(
-        'http://localhost:3000/v1/auth/refresh',
+        '${ApiConfig.baseUrl}/auth/refresh',
         data: {'refresh_token': refreshToken},
       );
 

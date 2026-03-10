@@ -20,9 +20,10 @@ Category _$CategoryFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$Category {
-  int get id => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: parseStringId)
+  String get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
-  @JsonKey(name: 'sort_order')
+  @JsonKey(name: 'sortOrder')
   int get sortOrder => throw _privateConstructorUsedError;
 
   /// Serializes this Category to a JSON map.
@@ -40,7 +41,10 @@ abstract class $CategoryCopyWith<$Res> {
   factory $CategoryCopyWith(Category value, $Res Function(Category) then) =
       _$CategoryCopyWithImpl<$Res, Category>;
   @useResult
-  $Res call({int id, String name, @JsonKey(name: 'sort_order') int sortOrder});
+  $Res call(
+      {@JsonKey(fromJson: parseStringId) String id,
+      String name,
+      @JsonKey(name: 'sortOrder') int sortOrder});
 }
 
 /// @nodoc
@@ -66,7 +70,7 @@ class _$CategoryCopyWithImpl<$Res, $Val extends Category>
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
       name: null == name
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
@@ -87,7 +91,10 @@ abstract class _$$CategoryImplCopyWith<$Res>
       __$$CategoryImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({int id, String name, @JsonKey(name: 'sort_order') int sortOrder});
+  $Res call(
+      {@JsonKey(fromJson: parseStringId) String id,
+      String name,
+      @JsonKey(name: 'sortOrder') int sortOrder});
 }
 
 /// @nodoc
@@ -111,7 +118,7 @@ class __$$CategoryImplCopyWithImpl<$Res>
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
       name: null == name
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
@@ -128,19 +135,20 @@ class __$$CategoryImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$CategoryImpl implements _Category {
   const _$CategoryImpl(
-      {required this.id,
+      {@JsonKey(fromJson: parseStringId) required this.id,
       required this.name,
-      @JsonKey(name: 'sort_order') this.sortOrder = 0});
+      @JsonKey(name: 'sortOrder') this.sortOrder = 0});
 
   factory _$CategoryImpl.fromJson(Map<String, dynamic> json) =>
       _$$CategoryImplFromJson(json);
 
   @override
-  final int id;
+  @JsonKey(fromJson: parseStringId)
+  final String id;
   @override
   final String name;
   @override
-  @JsonKey(name: 'sort_order')
+  @JsonKey(name: 'sortOrder')
   final int sortOrder;
 
   @override
@@ -181,19 +189,20 @@ class _$CategoryImpl implements _Category {
 
 abstract class _Category implements Category {
   const factory _Category(
-      {required final int id,
+      {@JsonKey(fromJson: parseStringId) required final String id,
       required final String name,
-      @JsonKey(name: 'sort_order') final int sortOrder}) = _$CategoryImpl;
+      @JsonKey(name: 'sortOrder') final int sortOrder}) = _$CategoryImpl;
 
   factory _Category.fromJson(Map<String, dynamic> json) =
       _$CategoryImpl.fromJson;
 
   @override
-  int get id;
+  @JsonKey(fromJson: parseStringId)
+  String get id;
   @override
   String get name;
   @override
-  @JsonKey(name: 'sort_order')
+  @JsonKey(name: 'sortOrder')
   int get sortOrder;
 
   /// Create a copy of Category

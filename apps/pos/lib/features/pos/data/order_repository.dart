@@ -31,7 +31,7 @@ class OrderRepository {
     return Order.fromJson(data);
   }
 
-  Future<Order> getOrder(int orderId) async {
+  Future<Order> getOrder(String orderId) async {
     final response = await _dio.get('/orders/$orderId');
     final data = response.data['data'] ?? response.data;
     return Order.fromJson(data);
@@ -47,11 +47,12 @@ class OrderRepository {
 
     final response = await _dio.get('/orders', queryParameters: queryParams);
     final data = response.data['data'] ?? response.data;
-    if (data is List) {
-      return data
+    final list = data is Map<String, dynamic>
+        ? data['data'] as List<dynamic>? ?? const []
+        : data as List<dynamic>? ?? const [];
+
+    return list
           .map((e) => Order.fromJson(e as Map<String, dynamic>))
           .toList();
-    }
-    return [];
   }
 }

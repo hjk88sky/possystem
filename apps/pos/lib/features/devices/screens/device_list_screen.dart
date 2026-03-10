@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import '../../../core/realtime/realtime_provider.dart';
 import '../models/device.dart';
 import '../providers/device_provider.dart';
 
@@ -25,6 +26,21 @@ class _DeviceListScreenState extends ConsumerState<DeviceListScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final deviceState = ref.watch(deviceListProvider);
+
+    ref.listen<RealtimeState>(realtimeProvider, (prev, next) {
+      final event = next.lastEvent;
+      if (event == null) {
+        return;
+      }
+
+      if (event.timestamp == prev?.lastEvent?.timestamp) {
+        return;
+      }
+
+      if (event.event.startsWith('devices.')) {
+        ref.read(deviceListProvider.notifier).fetchDevices();
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -101,7 +117,7 @@ class _DeviceListScreenState extends ConsumerState<DeviceListScreen> {
             Icon(
               Icons.devices,
               size: 64,
-              color: theme.colorScheme.onSurfaceVariant.withOpacity(0.4),
+              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
             ),
             const SizedBox(height: 16),
             Text(
@@ -160,7 +176,7 @@ class _DeviceListScreenState extends ConsumerState<DeviceListScreen> {
         color: theme.colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: theme.colorScheme.outlineVariant.withOpacity(0.5),
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
         ),
       ),
       child: Row(
@@ -274,7 +290,7 @@ class _DeviceCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: theme.colorScheme.outlineVariant.withOpacity(0.5),
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
         ),
       ),
       child: InkWell(
@@ -289,7 +305,7 @@ class _DeviceCard extends StatelessWidget {
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer.withOpacity(0.5),
+                  color: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -366,7 +382,7 @@ class _DeviceCard extends StatelessWidget {
               // 편집 아이콘
               Icon(
                 Icons.chevron_right,
-                color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
+                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
               ),
             ],
           ),
@@ -540,7 +556,7 @@ class _DeviceEditDialogState extends State<_DeviceEditDialog> {
               ),
               decoration: BoxDecoration(
                 color: theme.colorScheme.surfaceContainerHighest
-                    .withOpacity(0.5),
+                    .withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -668,7 +684,7 @@ class _StatusSelectButton extends StatelessWidget {
                   : Theme.of(context)
                       .colorScheme
                       .outlineVariant
-                      .withOpacity(0.5),
+                      .withValues(alpha: 0.5),
               width: isSelected ? 2 : 1,
             ),
           ),

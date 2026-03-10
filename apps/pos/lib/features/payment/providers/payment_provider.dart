@@ -32,7 +32,7 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
   PaymentNotifier(this._repository) : super(const PaymentState());
 
   Future<Payment?> processPayment(
-      int orderId, PaymentRequest request) async {
+      String orderId, PaymentRequest request) async {
     state = state.copyWith(status: PaymentStatus.loading, error: null);
     try {
       final payment = await _repository.processPayment(orderId, request);

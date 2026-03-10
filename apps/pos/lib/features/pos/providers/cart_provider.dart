@@ -19,11 +19,11 @@ class CartNotifier extends StateNotifier<List<CartItem>> {
     }
   }
 
-  void removeItem(int menuItemId) {
+  void removeItem(String menuItemId) {
     state = state.where((e) => e.menuItem.id != menuItemId).toList();
   }
 
-  void updateQuantity(int menuItemId, int quantity) {
+  void updateQuantity(String menuItemId, int quantity) {
     if (quantity <= 0) {
       removeItem(menuItemId);
       return;

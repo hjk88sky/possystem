@@ -7,33 +7,31 @@ part of 'order.dart';
 // **************************************************************************
 
 _$OrderImpl _$$OrderImplFromJson(Map<String, dynamic> json) => _$OrderImpl(
-      id: (json['id'] as num).toInt(),
-      orderNumber: json['order_number'] as String,
+      id: parseStringId(json['id']),
+      orderNumber: json['orderNo'] as String,
       status: json['status'] as String,
       channel: json['channel'] as String,
-      totalAmount: (json['total_amount'] as num).toInt(),
-      taxAmount: (json['tax_amount'] as num?)?.toInt() ?? 0,
-      items: (json['items'] as List<dynamic>?)
-              ?.map((e) => OrderItem.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-      priority:
-          $enumDecodeNullable(_$OrderPriorityEnumMap, json['priority']) ??
-              OrderPriority.normal,
-      createdAt: json['created_at'] as String?,
+      totalAmount: parseMoneyToInt(json['total']),
+      taxAmount: json['tax'] == null ? 0 : parseMoneyToInt(json['tax']),
+      items: json['orderItems'] == null
+          ? const []
+          : _orderItemsFromJson(json['orderItems'] as List?),
+      priority: $enumDecodeNullable(_$OrderPriorityEnumMap, json['priority']) ??
+          OrderPriority.normal,
+      createdAt: parseNullableString(json['createdAt']),
     );
 
 Map<String, dynamic> _$$OrderImplToJson(_$OrderImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'order_number': instance.orderNumber,
+      'orderNo': instance.orderNumber,
       'status': instance.status,
       'channel': instance.channel,
-      'total_amount': instance.totalAmount,
-      'tax_amount': instance.taxAmount,
-      'items': instance.items,
+      'total': instance.totalAmount,
+      'tax': instance.taxAmount,
+      'orderItems': _orderItemsToJson(instance.items),
       'priority': _$OrderPriorityEnumMap[instance.priority]!,
-      'created_at': instance.createdAt,
+      'createdAt': instance.createdAt,
     };
 
 const _$OrderPriorityEnumMap = {

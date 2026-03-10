@@ -20,11 +20,15 @@ User _$UserFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$User {
-  int get id => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: parseStringId)
+  String get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
   String get role => throw _privateConstructorUsedError;
-  @JsonKey(name: 'store_id')
-  int get storeId => throw _privateConstructorUsedError;
+  @JsonKey(readValue: _readStoreId, fromJson: parseStringId)
+  String get storeId => throw _privateConstructorUsedError;
+  @JsonKey(readValue: _readStoreName)
+  String? get storeName => throw _privateConstructorUsedError;
+  String? get phone => throw _privateConstructorUsedError;
 
   /// Serializes this User to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -41,10 +45,12 @@ abstract class $UserCopyWith<$Res> {
       _$UserCopyWithImpl<$Res, User>;
   @useResult
   $Res call(
-      {int id,
+      {@JsonKey(fromJson: parseStringId) String id,
       String name,
       String role,
-      @JsonKey(name: 'store_id') int storeId});
+      @JsonKey(readValue: _readStoreId, fromJson: parseStringId) String storeId,
+      @JsonKey(readValue: _readStoreName) String? storeName,
+      String? phone});
 }
 
 /// @nodoc
@@ -66,12 +72,14 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
     Object? name = null,
     Object? role = null,
     Object? storeId = null,
+    Object? storeName = freezed,
+    Object? phone = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
       name: null == name
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
@@ -83,7 +91,15 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
       storeId: null == storeId
           ? _value.storeId
           : storeId // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
+      storeName: freezed == storeName
+          ? _value.storeName
+          : storeName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      phone: freezed == phone
+          ? _value.phone
+          : phone // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 }
@@ -96,10 +112,12 @@ abstract class _$$UserImplCopyWith<$Res> implements $UserCopyWith<$Res> {
   @override
   @useResult
   $Res call(
-      {int id,
+      {@JsonKey(fromJson: parseStringId) String id,
       String name,
       String role,
-      @JsonKey(name: 'store_id') int storeId});
+      @JsonKey(readValue: _readStoreId, fromJson: parseStringId) String storeId,
+      @JsonKey(readValue: _readStoreName) String? storeName,
+      String? phone});
 }
 
 /// @nodoc
@@ -118,12 +136,14 @@ class __$$UserImplCopyWithImpl<$Res>
     Object? name = null,
     Object? role = null,
     Object? storeId = null,
+    Object? storeName = freezed,
+    Object? phone = freezed,
   }) {
     return _then(_$UserImpl(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
       name: null == name
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
@@ -135,7 +155,15 @@ class __$$UserImplCopyWithImpl<$Res>
       storeId: null == storeId
           ? _value.storeId
           : storeId // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
+      storeName: freezed == storeName
+          ? _value.storeName
+          : storeName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      phone: freezed == phone
+          ? _value.phone
+          : phone // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -144,27 +172,37 @@ class __$$UserImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$UserImpl implements _User {
   const _$UserImpl(
-      {required this.id,
+      {@JsonKey(fromJson: parseStringId) required this.id,
       required this.name,
-      required this.role,
-      @JsonKey(name: 'store_id') required this.storeId});
+      this.role = 'STAFF',
+      @JsonKey(readValue: _readStoreId, fromJson: parseStringId)
+      required this.storeId,
+      @JsonKey(readValue: _readStoreName) this.storeName,
+      this.phone});
 
   factory _$UserImpl.fromJson(Map<String, dynamic> json) =>
       _$$UserImplFromJson(json);
 
   @override
-  final int id;
+  @JsonKey(fromJson: parseStringId)
+  final String id;
   @override
   final String name;
   @override
+  @JsonKey()
   final String role;
   @override
-  @JsonKey(name: 'store_id')
-  final int storeId;
+  @JsonKey(readValue: _readStoreId, fromJson: parseStringId)
+  final String storeId;
+  @override
+  @JsonKey(readValue: _readStoreName)
+  final String? storeName;
+  @override
+  final String? phone;
 
   @override
   String toString() {
-    return 'User(id: $id, name: $name, role: $role, storeId: $storeId)';
+    return 'User(id: $id, name: $name, role: $role, storeId: $storeId, storeName: $storeName, phone: $phone)';
   }
 
   @override
@@ -175,12 +213,16 @@ class _$UserImpl implements _User {
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.role, role) || other.role == role) &&
-            (identical(other.storeId, storeId) || other.storeId == storeId));
+            (identical(other.storeId, storeId) || other.storeId == storeId) &&
+            (identical(other.storeName, storeName) ||
+                other.storeName == storeName) &&
+            (identical(other.phone, phone) || other.phone == phone));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, name, role, storeId);
+  int get hashCode =>
+      Object.hash(runtimeType, id, name, role, storeId, storeName, phone);
 
   /// Create a copy of User
   /// with the given fields replaced by the non-null parameter values.
@@ -200,22 +242,31 @@ class _$UserImpl implements _User {
 
 abstract class _User implements User {
   const factory _User(
-      {required final int id,
+      {@JsonKey(fromJson: parseStringId) required final String id,
       required final String name,
-      required final String role,
-      @JsonKey(name: 'store_id') required final int storeId}) = _$UserImpl;
+      final String role,
+      @JsonKey(readValue: _readStoreId, fromJson: parseStringId)
+      required final String storeId,
+      @JsonKey(readValue: _readStoreName) final String? storeName,
+      final String? phone}) = _$UserImpl;
 
   factory _User.fromJson(Map<String, dynamic> json) = _$UserImpl.fromJson;
 
   @override
-  int get id;
+  @JsonKey(fromJson: parseStringId)
+  String get id;
   @override
   String get name;
   @override
   String get role;
   @override
-  @JsonKey(name: 'store_id')
-  int get storeId;
+  @JsonKey(readValue: _readStoreId, fromJson: parseStringId)
+  String get storeId;
+  @override
+  @JsonKey(readValue: _readStoreName)
+  String? get storeName;
+  @override
+  String? get phone;
 
   /// Create a copy of User
   /// with the given fields replaced by the non-null parameter values.

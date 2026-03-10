@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../models/order.dart';
 import '../providers/cart_provider.dart';
 import '../providers/order_provider.dart';
 import 'cart_item_row.dart';
@@ -165,6 +164,7 @@ class CartPanel extends ConsumerWidget {
       ref.read(cartPriorityProvider.notifier).reset();
       context.push('/payment', extra: {
         'orderId': order.id,
+        'orderNumber': order.orderNumber,
         'totalAmount': total,
       });
     }

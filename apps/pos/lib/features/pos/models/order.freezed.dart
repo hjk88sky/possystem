@@ -20,18 +20,23 @@ Order _$OrderFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$Order {
-  int get id => throw _privateConstructorUsedError;
-  @JsonKey(name: 'order_number')
+  @JsonKey(fromJson: parseStringId)
+  String get id => throw _privateConstructorUsedError;
+  @JsonKey(name: 'orderNo')
   String get orderNumber => throw _privateConstructorUsedError;
   String get status => throw _privateConstructorUsedError;
   String get channel => throw _privateConstructorUsedError;
-  @JsonKey(name: 'total_amount')
+  @JsonKey(name: 'total', fromJson: parseMoneyToInt)
   int get totalAmount => throw _privateConstructorUsedError;
-  @JsonKey(name: 'tax_amount')
+  @JsonKey(name: 'tax', fromJson: parseMoneyToInt)
   int get taxAmount => throw _privateConstructorUsedError;
+  @JsonKey(
+      name: 'orderItems',
+      fromJson: _orderItemsFromJson,
+      toJson: _orderItemsToJson)
   List<OrderItem> get items => throw _privateConstructorUsedError;
   OrderPriority get priority => throw _privateConstructorUsedError;
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: 'createdAt', fromJson: parseNullableString)
   String? get createdAt => throw _privateConstructorUsedError;
 
   /// Serializes this Order to a JSON map.
@@ -49,15 +54,20 @@ abstract class $OrderCopyWith<$Res> {
       _$OrderCopyWithImpl<$Res, Order>;
   @useResult
   $Res call(
-      {int id,
-      @JsonKey(name: 'order_number') String orderNumber,
+      {@JsonKey(fromJson: parseStringId) String id,
+      @JsonKey(name: 'orderNo') String orderNumber,
       String status,
       String channel,
-      @JsonKey(name: 'total_amount') int totalAmount,
-      @JsonKey(name: 'tax_amount') int taxAmount,
+      @JsonKey(name: 'total', fromJson: parseMoneyToInt) int totalAmount,
+      @JsonKey(name: 'tax', fromJson: parseMoneyToInt) int taxAmount,
+      @JsonKey(
+          name: 'orderItems',
+          fromJson: _orderItemsFromJson,
+          toJson: _orderItemsToJson)
       List<OrderItem> items,
       OrderPriority priority,
-      @JsonKey(name: 'created_at') String? createdAt});
+      @JsonKey(name: 'createdAt', fromJson: parseNullableString)
+      String? createdAt});
 }
 
 /// @nodoc
@@ -89,7 +99,7 @@ class _$OrderCopyWithImpl<$Res, $Val extends Order>
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
       orderNumber: null == orderNumber
           ? _value.orderNumber
           : orderNumber // ignore: cast_nullable_to_non_nullable
@@ -134,15 +144,20 @@ abstract class _$$OrderImplCopyWith<$Res> implements $OrderCopyWith<$Res> {
   @override
   @useResult
   $Res call(
-      {int id,
-      @JsonKey(name: 'order_number') String orderNumber,
+      {@JsonKey(fromJson: parseStringId) String id,
+      @JsonKey(name: 'orderNo') String orderNumber,
       String status,
       String channel,
-      @JsonKey(name: 'total_amount') int totalAmount,
-      @JsonKey(name: 'tax_amount') int taxAmount,
+      @JsonKey(name: 'total', fromJson: parseMoneyToInt) int totalAmount,
+      @JsonKey(name: 'tax', fromJson: parseMoneyToInt) int taxAmount,
+      @JsonKey(
+          name: 'orderItems',
+          fromJson: _orderItemsFromJson,
+          toJson: _orderItemsToJson)
       List<OrderItem> items,
       OrderPriority priority,
-      @JsonKey(name: 'created_at') String? createdAt});
+      @JsonKey(name: 'createdAt', fromJson: parseNullableString)
+      String? createdAt});
 }
 
 /// @nodoc
@@ -172,7 +187,7 @@ class __$$OrderImplCopyWithImpl<$Res>
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
       orderNumber: null == orderNumber
           ? _value.orderNumber
           : orderNumber // ignore: cast_nullable_to_non_nullable
@@ -213,38 +228,48 @@ class __$$OrderImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$OrderImpl implements _Order {
   const _$OrderImpl(
-      {required this.id,
-      @JsonKey(name: 'order_number') required this.orderNumber,
+      {@JsonKey(fromJson: parseStringId) required this.id,
+      @JsonKey(name: 'orderNo') required this.orderNumber,
       required this.status,
       required this.channel,
-      @JsonKey(name: 'total_amount') required this.totalAmount,
-      @JsonKey(name: 'tax_amount') this.taxAmount = 0,
+      @JsonKey(name: 'total', fromJson: parseMoneyToInt)
+      required this.totalAmount,
+      @JsonKey(name: 'tax', fromJson: parseMoneyToInt) this.taxAmount = 0,
+      @JsonKey(
+          name: 'orderItems',
+          fromJson: _orderItemsFromJson,
+          toJson: _orderItemsToJson)
       final List<OrderItem> items = const [],
       this.priority = OrderPriority.normal,
-      @JsonKey(name: 'created_at') this.createdAt})
+      @JsonKey(name: 'createdAt', fromJson: parseNullableString)
+      this.createdAt})
       : _items = items;
 
   factory _$OrderImpl.fromJson(Map<String, dynamic> json) =>
       _$$OrderImplFromJson(json);
 
   @override
-  final int id;
+  @JsonKey(fromJson: parseStringId)
+  final String id;
   @override
-  @JsonKey(name: 'order_number')
+  @JsonKey(name: 'orderNo')
   final String orderNumber;
   @override
   final String status;
   @override
   final String channel;
   @override
-  @JsonKey(name: 'total_amount')
+  @JsonKey(name: 'total', fromJson: parseMoneyToInt)
   final int totalAmount;
   @override
-  @JsonKey(name: 'tax_amount')
+  @JsonKey(name: 'tax', fromJson: parseMoneyToInt)
   final int taxAmount;
   final List<OrderItem> _items;
   @override
-  @JsonKey()
+  @JsonKey(
+      name: 'orderItems',
+      fromJson: _orderItemsFromJson,
+      toJson: _orderItemsToJson)
   List<OrderItem> get items {
     if (_items is EqualUnmodifiableListView) return _items;
     // ignore: implicit_dynamic_type
@@ -255,7 +280,7 @@ class _$OrderImpl implements _Order {
   @JsonKey()
   final OrderPriority priority;
   @override
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: 'createdAt', fromJson: parseNullableString)
   final String? createdAt;
 
   @override
@@ -316,39 +341,50 @@ class _$OrderImpl implements _Order {
 
 abstract class _Order implements Order {
   const factory _Order(
-      {required final int id,
-      @JsonKey(name: 'order_number') required final String orderNumber,
+      {@JsonKey(fromJson: parseStringId) required final String id,
+      @JsonKey(name: 'orderNo') required final String orderNumber,
       required final String status,
       required final String channel,
-      @JsonKey(name: 'total_amount') required final int totalAmount,
-      @JsonKey(name: 'tax_amount') final int taxAmount,
+      @JsonKey(name: 'total', fromJson: parseMoneyToInt)
+      required final int totalAmount,
+      @JsonKey(name: 'tax', fromJson: parseMoneyToInt) final int taxAmount,
+      @JsonKey(
+          name: 'orderItems',
+          fromJson: _orderItemsFromJson,
+          toJson: _orderItemsToJson)
       final List<OrderItem> items,
       final OrderPriority priority,
-      @JsonKey(name: 'created_at') final String? createdAt}) = _$OrderImpl;
+      @JsonKey(name: 'createdAt', fromJson: parseNullableString)
+      final String? createdAt}) = _$OrderImpl;
 
   factory _Order.fromJson(Map<String, dynamic> json) = _$OrderImpl.fromJson;
 
   @override
-  int get id;
+  @JsonKey(fromJson: parseStringId)
+  String get id;
   @override
-  @JsonKey(name: 'order_number')
+  @JsonKey(name: 'orderNo')
   String get orderNumber;
   @override
   String get status;
   @override
   String get channel;
   @override
-  @JsonKey(name: 'total_amount')
+  @JsonKey(name: 'total', fromJson: parseMoneyToInt)
   int get totalAmount;
   @override
-  @JsonKey(name: 'tax_amount')
+  @JsonKey(name: 'tax', fromJson: parseMoneyToInt)
   int get taxAmount;
   @override
+  @JsonKey(
+      name: 'orderItems',
+      fromJson: _orderItemsFromJson,
+      toJson: _orderItemsToJson)
   List<OrderItem> get items;
   @override
   OrderPriority get priority;
   @override
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: 'createdAt', fromJson: parseNullableString)
   String? get createdAt;
 
   /// Create a copy of Order

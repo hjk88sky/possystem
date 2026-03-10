@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../../../core/utils/json_parsers.dart';
 import 'order_item.dart';
 
 part 'order.freezed.dart';
@@ -72,18 +73,38 @@ extension OrderPriorityX on OrderPriority {
   }
 }
 
+List<OrderItem> _orderItemsFromJson(List<dynamic>? json) {
+  if (json == null) {
+    return const [];
+  }
+
+  return json
+      .map((item) => OrderItem.fromJson(item as Map<String, dynamic>))
+      .toList();
+}
+
+List<Map<String, dynamic>> _orderItemsToJson(List<OrderItem> items) {
+  return items.map((item) => item.toJson()).toList();
+}
+
 @freezed
 class Order with _$Order {
   const factory Order({
-    required int id,
-    @JsonKey(name: 'order_number') required String orderNumber,
+    @JsonKey(fromJson: parseStringId) required String id,
+    @JsonKey(name: 'orderNo') required String orderNumber,
     required String status,
     required String channel,
-    @JsonKey(name: 'total_amount') required int totalAmount,
-    @JsonKey(name: 'tax_amount') @Default(0) int taxAmount,
-    @Default([]) List<OrderItem> items,
+    @JsonKey(name: 'total', fromJson: parseMoneyToInt) required int totalAmount,
+    @JsonKey(name: 'tax', fromJson: parseMoneyToInt) @Default(0) int taxAmount,
+    @JsonKey(
+      name: 'orderItems',
+      fromJson: _orderItemsFromJson,
+      toJson: _orderItemsToJson,
+    )
+    @Default([])
+    List<OrderItem> items,
     @Default(OrderPriority.normal) OrderPriority priority,
-    @JsonKey(name: 'created_at') String? createdAt,
+    @JsonKey(name: 'createdAt', fromJson: parseNullableString) String? createdAt,
   }) = _Order;
 
   factory Order.fromJson(Map<String, dynamic> json) => _$OrderFromJson(json);

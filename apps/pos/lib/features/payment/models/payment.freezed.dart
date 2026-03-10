@@ -20,13 +20,15 @@ Payment _$PaymentFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$Payment {
-  int get id => throw _privateConstructorUsedError;
-  @JsonKey(name: 'order_id')
-  int get orderId => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: parseStringId)
+  String get id => throw _privateConstructorUsedError;
+  @JsonKey(name: 'orderId', fromJson: parseStringId)
+  String get orderId => throw _privateConstructorUsedError;
   String get method => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: parseMoneyToInt)
   int get amount => throw _privateConstructorUsedError;
   String get status => throw _privateConstructorUsedError;
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: 'createdAt', fromJson: parseNullableString)
   String? get createdAt => throw _privateConstructorUsedError;
 
   /// Serializes this Payment to a JSON map.
@@ -44,12 +46,13 @@ abstract class $PaymentCopyWith<$Res> {
       _$PaymentCopyWithImpl<$Res, Payment>;
   @useResult
   $Res call(
-      {int id,
-      @JsonKey(name: 'order_id') int orderId,
+      {@JsonKey(fromJson: parseStringId) String id,
+      @JsonKey(name: 'orderId', fromJson: parseStringId) String orderId,
       String method,
-      int amount,
+      @JsonKey(fromJson: parseMoneyToInt) int amount,
       String status,
-      @JsonKey(name: 'created_at') String? createdAt});
+      @JsonKey(name: 'createdAt', fromJson: parseNullableString)
+      String? createdAt});
 }
 
 /// @nodoc
@@ -78,11 +81,11 @@ class _$PaymentCopyWithImpl<$Res, $Val extends Payment>
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
       orderId: null == orderId
           ? _value.orderId
           : orderId // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
       method: null == method
           ? _value.method
           : method // ignore: cast_nullable_to_non_nullable
@@ -111,12 +114,13 @@ abstract class _$$PaymentImplCopyWith<$Res> implements $PaymentCopyWith<$Res> {
   @override
   @useResult
   $Res call(
-      {int id,
-      @JsonKey(name: 'order_id') int orderId,
+      {@JsonKey(fromJson: parseStringId) String id,
+      @JsonKey(name: 'orderId', fromJson: parseStringId) String orderId,
       String method,
-      int amount,
+      @JsonKey(fromJson: parseMoneyToInt) int amount,
       String status,
-      @JsonKey(name: 'created_at') String? createdAt});
+      @JsonKey(name: 'createdAt', fromJson: parseNullableString)
+      String? createdAt});
 }
 
 /// @nodoc
@@ -143,11 +147,11 @@ class __$$PaymentImplCopyWithImpl<$Res>
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
       orderId: null == orderId
           ? _value.orderId
           : orderId // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
       method: null == method
           ? _value.method
           : method // ignore: cast_nullable_to_non_nullable
@@ -172,29 +176,32 @@ class __$$PaymentImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$PaymentImpl implements _Payment {
   const _$PaymentImpl(
-      {required this.id,
-      @JsonKey(name: 'order_id') required this.orderId,
+      {@JsonKey(fromJson: parseStringId) required this.id,
+      @JsonKey(name: 'orderId', fromJson: parseStringId) required this.orderId,
       required this.method,
-      required this.amount,
+      @JsonKey(fromJson: parseMoneyToInt) required this.amount,
       required this.status,
-      @JsonKey(name: 'created_at') this.createdAt});
+      @JsonKey(name: 'createdAt', fromJson: parseNullableString)
+      this.createdAt});
 
   factory _$PaymentImpl.fromJson(Map<String, dynamic> json) =>
       _$$PaymentImplFromJson(json);
 
   @override
-  final int id;
+  @JsonKey(fromJson: parseStringId)
+  final String id;
   @override
-  @JsonKey(name: 'order_id')
-  final int orderId;
+  @JsonKey(name: 'orderId', fromJson: parseStringId)
+  final String orderId;
   @override
   final String method;
   @override
+  @JsonKey(fromJson: parseMoneyToInt)
   final int amount;
   @override
   final String status;
   @override
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: 'createdAt', fromJson: parseNullableString)
   final String? createdAt;
 
   @override
@@ -239,28 +246,32 @@ class _$PaymentImpl implements _Payment {
 
 abstract class _Payment implements Payment {
   const factory _Payment(
-      {required final int id,
-      @JsonKey(name: 'order_id') required final int orderId,
+      {@JsonKey(fromJson: parseStringId) required final String id,
+      @JsonKey(name: 'orderId', fromJson: parseStringId)
+      required final String orderId,
       required final String method,
-      required final int amount,
+      @JsonKey(fromJson: parseMoneyToInt) required final int amount,
       required final String status,
-      @JsonKey(name: 'created_at') final String? createdAt}) = _$PaymentImpl;
+      @JsonKey(name: 'createdAt', fromJson: parseNullableString)
+      final String? createdAt}) = _$PaymentImpl;
 
   factory _Payment.fromJson(Map<String, dynamic> json) = _$PaymentImpl.fromJson;
 
   @override
-  int get id;
+  @JsonKey(fromJson: parseStringId)
+  String get id;
   @override
-  @JsonKey(name: 'order_id')
-  int get orderId;
+  @JsonKey(name: 'orderId', fromJson: parseStringId)
+  String get orderId;
   @override
   String get method;
   @override
+  @JsonKey(fromJson: parseMoneyToInt)
   int get amount;
   @override
   String get status;
   @override
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: 'createdAt', fromJson: parseNullableString)
   String? get createdAt;
 
   /// Create a copy of Payment

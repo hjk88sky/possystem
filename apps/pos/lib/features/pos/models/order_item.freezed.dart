@@ -20,15 +20,17 @@ OrderItem _$OrderItemFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$OrderItem {
-  int get id => throw _privateConstructorUsedError;
-  @JsonKey(name: 'item_id')
-  int get itemId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'item_name')
+  @JsonKey(fromJson: parseStringId)
+  String get id => throw _privateConstructorUsedError;
+  @JsonKey(readValue: _readOrderItemId, fromJson: parseNullableStringId)
+  String? get itemId => throw _privateConstructorUsedError;
+  @JsonKey(readValue: _readOrderItemName)
   String get itemName => throw _privateConstructorUsedError;
+  @JsonKey(readValue: _readOrderItemQuantity)
   int get quantity => throw _privateConstructorUsedError;
-  @JsonKey(name: 'unit_price')
+  @JsonKey(readValue: _readOrderItemUnitPrice, fromJson: parseMoneyToInt)
   int get unitPrice => throw _privateConstructorUsedError;
-  @JsonKey(name: 'total_price')
+  @JsonKey(readValue: _readOrderItemTotalPrice, fromJson: parseMoneyToInt)
   int get totalPrice => throw _privateConstructorUsedError;
 
   /// Serializes this OrderItem to a JSON map.
@@ -47,12 +49,15 @@ abstract class $OrderItemCopyWith<$Res> {
       _$OrderItemCopyWithImpl<$Res, OrderItem>;
   @useResult
   $Res call(
-      {int id,
-      @JsonKey(name: 'item_id') int itemId,
-      @JsonKey(name: 'item_name') String itemName,
-      int quantity,
-      @JsonKey(name: 'unit_price') int unitPrice,
-      @JsonKey(name: 'total_price') int totalPrice});
+      {@JsonKey(fromJson: parseStringId) String id,
+      @JsonKey(readValue: _readOrderItemId, fromJson: parseNullableStringId)
+      String? itemId,
+      @JsonKey(readValue: _readOrderItemName) String itemName,
+      @JsonKey(readValue: _readOrderItemQuantity) int quantity,
+      @JsonKey(readValue: _readOrderItemUnitPrice, fromJson: parseMoneyToInt)
+      int unitPrice,
+      @JsonKey(readValue: _readOrderItemTotalPrice, fromJson: parseMoneyToInt)
+      int totalPrice});
 }
 
 /// @nodoc
@@ -71,7 +76,7 @@ class _$OrderItemCopyWithImpl<$Res, $Val extends OrderItem>
   @override
   $Res call({
     Object? id = null,
-    Object? itemId = null,
+    Object? itemId = freezed,
     Object? itemName = null,
     Object? quantity = null,
     Object? unitPrice = null,
@@ -81,11 +86,11 @@ class _$OrderItemCopyWithImpl<$Res, $Val extends OrderItem>
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
-              as int,
-      itemId: null == itemId
+              as String,
+      itemId: freezed == itemId
           ? _value.itemId
           : itemId // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String?,
       itemName: null == itemName
           ? _value.itemName
           : itemName // ignore: cast_nullable_to_non_nullable
@@ -115,12 +120,15 @@ abstract class _$$OrderItemImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {int id,
-      @JsonKey(name: 'item_id') int itemId,
-      @JsonKey(name: 'item_name') String itemName,
-      int quantity,
-      @JsonKey(name: 'unit_price') int unitPrice,
-      @JsonKey(name: 'total_price') int totalPrice});
+      {@JsonKey(fromJson: parseStringId) String id,
+      @JsonKey(readValue: _readOrderItemId, fromJson: parseNullableStringId)
+      String? itemId,
+      @JsonKey(readValue: _readOrderItemName) String itemName,
+      @JsonKey(readValue: _readOrderItemQuantity) int quantity,
+      @JsonKey(readValue: _readOrderItemUnitPrice, fromJson: parseMoneyToInt)
+      int unitPrice,
+      @JsonKey(readValue: _readOrderItemTotalPrice, fromJson: parseMoneyToInt)
+      int totalPrice});
 }
 
 /// @nodoc
@@ -137,7 +145,7 @@ class __$$OrderItemImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? id = null,
-    Object? itemId = null,
+    Object? itemId = freezed,
     Object? itemName = null,
     Object? quantity = null,
     Object? unitPrice = null,
@@ -147,11 +155,11 @@ class __$$OrderItemImplCopyWithImpl<$Res>
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
-              as int,
-      itemId: null == itemId
+              as String,
+      itemId: freezed == itemId
           ? _value.itemId
           : itemId // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String?,
       itemName: null == itemName
           ? _value.itemName
           : itemName // ignore: cast_nullable_to_non_nullable
@@ -176,31 +184,36 @@ class __$$OrderItemImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$OrderItemImpl implements _OrderItem {
   const _$OrderItemImpl(
-      {required this.id,
-      @JsonKey(name: 'item_id') required this.itemId,
-      @JsonKey(name: 'item_name') required this.itemName,
-      required this.quantity,
-      @JsonKey(name: 'unit_price') required this.unitPrice,
-      @JsonKey(name: 'total_price') required this.totalPrice});
+      {@JsonKey(fromJson: parseStringId) required this.id,
+      @JsonKey(readValue: _readOrderItemId, fromJson: parseNullableStringId)
+      this.itemId,
+      @JsonKey(readValue: _readOrderItemName) required this.itemName,
+      @JsonKey(readValue: _readOrderItemQuantity) required this.quantity,
+      @JsonKey(readValue: _readOrderItemUnitPrice, fromJson: parseMoneyToInt)
+      required this.unitPrice,
+      @JsonKey(readValue: _readOrderItemTotalPrice, fromJson: parseMoneyToInt)
+      required this.totalPrice});
 
   factory _$OrderItemImpl.fromJson(Map<String, dynamic> json) =>
       _$$OrderItemImplFromJson(json);
 
   @override
-  final int id;
+  @JsonKey(fromJson: parseStringId)
+  final String id;
   @override
-  @JsonKey(name: 'item_id')
-  final int itemId;
+  @JsonKey(readValue: _readOrderItemId, fromJson: parseNullableStringId)
+  final String? itemId;
   @override
-  @JsonKey(name: 'item_name')
+  @JsonKey(readValue: _readOrderItemName)
   final String itemName;
   @override
+  @JsonKey(readValue: _readOrderItemQuantity)
   final int quantity;
   @override
-  @JsonKey(name: 'unit_price')
+  @JsonKey(readValue: _readOrderItemUnitPrice, fromJson: parseMoneyToInt)
   final int unitPrice;
   @override
-  @JsonKey(name: 'total_price')
+  @JsonKey(readValue: _readOrderItemTotalPrice, fromJson: parseMoneyToInt)
   final int totalPrice;
 
   @override
@@ -248,32 +261,36 @@ class _$OrderItemImpl implements _OrderItem {
 
 abstract class _OrderItem implements OrderItem {
   const factory _OrderItem(
-          {required final int id,
-          @JsonKey(name: 'item_id') required final int itemId,
-          @JsonKey(name: 'item_name') required final String itemName,
-          required final int quantity,
-          @JsonKey(name: 'unit_price') required final int unitPrice,
-          @JsonKey(name: 'total_price') required final int totalPrice}) =
-      _$OrderItemImpl;
+      {@JsonKey(fromJson: parseStringId) required final String id,
+      @JsonKey(readValue: _readOrderItemId, fromJson: parseNullableStringId)
+      final String? itemId,
+      @JsonKey(readValue: _readOrderItemName) required final String itemName,
+      @JsonKey(readValue: _readOrderItemQuantity) required final int quantity,
+      @JsonKey(readValue: _readOrderItemUnitPrice, fromJson: parseMoneyToInt)
+      required final int unitPrice,
+      @JsonKey(readValue: _readOrderItemTotalPrice, fromJson: parseMoneyToInt)
+      required final int totalPrice}) = _$OrderItemImpl;
 
   factory _OrderItem.fromJson(Map<String, dynamic> json) =
       _$OrderItemImpl.fromJson;
 
   @override
-  int get id;
+  @JsonKey(fromJson: parseStringId)
+  String get id;
   @override
-  @JsonKey(name: 'item_id')
-  int get itemId;
+  @JsonKey(readValue: _readOrderItemId, fromJson: parseNullableStringId)
+  String? get itemId;
   @override
-  @JsonKey(name: 'item_name')
+  @JsonKey(readValue: _readOrderItemName)
   String get itemName;
   @override
+  @JsonKey(readValue: _readOrderItemQuantity)
   int get quantity;
   @override
-  @JsonKey(name: 'unit_price')
+  @JsonKey(readValue: _readOrderItemUnitPrice, fromJson: parseMoneyToInt)
   int get unitPrice;
   @override
-  @JsonKey(name: 'total_price')
+  @JsonKey(readValue: _readOrderItemTotalPrice, fromJson: parseMoneyToInt)
   int get totalPrice;
 
   /// Create a copy of OrderItem

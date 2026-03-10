@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/router/app_router.dart';
+import 'core/realtime/realtime_provider.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/devices/providers/device_provider.dart';
@@ -16,11 +17,14 @@ class PosApp extends ConsumerWidget {
     // 로그아웃 시 하트비트 중지
     ref.listen<AuthState>(authProvider, (prev, next) {
       if (prev?.status != AuthStatus.authenticated &&
-          next.status == AuthStatus.authenticated) {
+          next.status == AuthStatus.authenticated &&
+          next.user != null) {
+        ref.read(realtimeProvider.notifier).connect(storeId: next.user!.storeId);
         ref.read(deviceRegistrationProvider.notifier).registerDevice();
       }
       if (prev?.status == AuthStatus.authenticated &&
           next.status != AuthStatus.authenticated) {
+        ref.read(realtimeProvider.notifier).disconnect();
         ref.read(deviceRegistrationProvider.notifier).stopHeartbeat();
       }
     });

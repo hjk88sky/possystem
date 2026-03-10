@@ -14,7 +14,7 @@ class PaymentRepository {
   PaymentRepository(this._dio);
 
   Future<Payment> processPayment(
-      int orderId, PaymentRequest request) async {
+      String orderId, PaymentRequest request) async {
     final response = await _dio.post(
       '/orders/$orderId/payments',
       data: request.toJson(),

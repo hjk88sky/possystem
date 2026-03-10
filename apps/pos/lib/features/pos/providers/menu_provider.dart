@@ -13,7 +13,7 @@ final menuItemsProvider = FutureProvider<List<MenuItem>>((ref) async {
   return repo.getItems();
 });
 
-final selectedCategoryProvider = StateProvider<int?>((ref) => null);
+final selectedCategoryProvider = StateProvider<String?>((ref) => null);
 
 final filteredMenuItemsProvider = Provider<AsyncValue<List<MenuItem>>>((ref) {
   final categoryId = ref.watch(selectedCategoryProvider);
