@@ -9,13 +9,17 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { GetOrdersQueryDto } from './dto/get-orders-query.dto';
+import { RealtimeService } from '../realtime/realtime.service';
 
 @Injectable()
 export class OrdersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private realtime: RealtimeService,
+  ) {}
 
   async create(storeId: string, dto: CreateOrderDto) {
-    return this.prisma.transaction(async (tx) => {
+    const order = await this.prisma.transaction(async (tx) => {
       const orderNo = await this.generateOrderNo(storeId, tx as any);
 
       let subtotal = new Prisma.Decimal(0);
@@ -117,6 +121,15 @@ export class OrdersService {
 
       return order;
     });
+
+    this.realtime.emitStoreEvent(
+      storeId,
+      'orders.created',
+      { order },
+      { type: 'order', id: order.id },
+    );
+
+    return order;
   }
 
   async findAll(storeId: string, query?: GetOrdersQueryDto) {
@@ -176,25 +189,25 @@ export class OrdersService {
   }
 
   async update(storeId: string, id: string, dto: UpdateOrderDto) {
-    const order = await this.findOne(storeId, id);
+    const existingOrder = await this.findOne(storeId, id);
 
-    if (order.version !== dto.version) {
+    if (existingOrder.version !== dto.version) {
       throw new ConflictException({
         errorCode: 'VERSION_CONFLICT',
         message: 'Order has been modified by another user',
-        currentVersion: order.version,
+        currentVersion: existingOrder.version,
       });
     }
 
     // Priority cannot be changed on finalized orders
     const finalizedStatuses = ['PAID', 'CANCELLED', 'VOID'];
-    if (dto.priority && finalizedStatuses.includes(order.status)) {
+    if (dto.priority && finalizedStatuses.includes(existingOrder.status)) {
       throw new UnprocessableEntityException(
-        `Cannot change priority of an order with status ${order.status}`,
+        `Cannot change priority of an order with status ${existingOrder.status}`,
       );
     }
 
-    return this.prisma.order.update({
+    const order = await this.prisma.order.update({
       where: { id },
       data: {
         status: dto.status as any,
@@ -210,6 +223,15 @@ export class OrdersService {
         payments: true,
       },
     });
+
+    this.realtime.emitStoreEvent(
+      storeId,
+      'orders.updated',
+      { order },
+      { type: 'order', id: order.id },
+    );
+
+    return order;
   }
 
   private async generateOrderNo(

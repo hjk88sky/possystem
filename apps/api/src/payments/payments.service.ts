@@ -7,13 +7,17 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { CreateRefundDto } from './dto/create-refund.dto';
+import { RealtimeService } from '../realtime/realtime.service';
 
 @Injectable()
 export class PaymentsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private realtime: RealtimeService,
+  ) {}
 
   async createPayment(storeId: string, orderId: string, dto: CreatePaymentDto) {
-    return this.prisma.transaction(async (tx) => {
+    const result = await this.prisma.transaction(async (tx) => {
       const order = await tx.order.findFirst({
         where: { id: orderId, storeId },
       });
@@ -55,6 +59,7 @@ export class PaymentsService {
         },
       });
 
+      let currentOrder = order;
       if (mockApproval.status === 'APPROVED') {
         const newPaidAmount = order.paidAmount.add(amount);
         const orderTotal = order.total;
@@ -74,18 +79,33 @@ export class PaymentsService {
           }
         }
 
-        await tx.order.update({
+        currentOrder = await tx.order.update({
           where: { id: orderId },
           data: updateData,
         });
       }
 
-      return payment;
+      return { payment, order: currentOrder };
     });
+
+    this.realtime.emitStoreEvent(
+      storeId,
+      'payments.created',
+      result,
+      { type: 'payment', id: result.payment.id },
+    );
+    this.realtime.emitStoreEvent(
+      storeId,
+      'orders.updated',
+      { order: result.order, reason: 'payment' },
+      { type: 'order', id: result.order.id },
+    );
+
+    return result.payment;
   }
 
   async createRefund(storeId: string, orderId: string, dto: CreateRefundDto) {
-    return this.prisma.transaction(async (tx) => {
+    const result = await this.prisma.transaction(async (tx) => {
       const order = await tx.order.findFirst({
         where: { id: orderId, storeId },
       });
@@ -120,7 +140,7 @@ export class PaymentsService {
       });
 
       // Update order paid amount
-      await tx.order.update({
+      const updatedOrder = await tx.order.update({
         where: { id: orderId },
         data: {
           paidAmount: { decrement: refundAmount },
@@ -130,8 +150,23 @@ export class PaymentsService {
         },
       });
 
-      return refund;
+      return { refund, order: updatedOrder, paymentId: payment.id };
     });
+
+    this.realtime.emitStoreEvent(
+      storeId,
+      'payments.refunded',
+      result,
+      { type: 'refund', id: result.refund.id },
+    );
+    this.realtime.emitStoreEvent(
+      storeId,
+      'orders.updated',
+      { order: result.order, reason: 'refund' },
+      { type: 'order', id: result.order.id },
+    );
+
+    return result.refund;
   }
 
   private mockVanApproval(method: string) {

@@ -2,10 +2,14 @@ import { Injectable, NotFoundException, ConflictException } from '@nestjs/common
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
+import { RealtimeService } from '../realtime/realtime.service';
 
 @Injectable()
 export class StoresService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private realtime: RealtimeService,
+  ) {}
 
   async findAll() {
     return this.prisma.store.findMany({
@@ -32,7 +36,7 @@ export class StoresService {
       throw new ConflictException('Store code already exists');
     }
 
-    return this.prisma.store.create({
+    const store = await this.prisma.store.create({
       data: {
         name: dto.name,
         code: dto.code,
@@ -42,13 +46,31 @@ export class StoresService {
         timezone: dto.timezone,
       },
     });
+
+    this.realtime.emitStoreEvent(
+      store.id,
+      'stores.created',
+      { store },
+      { type: 'store', id: store.id },
+    );
+
+    return store;
   }
 
   async update(id: string, dto: UpdateStoreDto) {
     await this.findOne(id);
-    return this.prisma.store.update({
+    const store = await this.prisma.store.update({
       where: { id },
       data: dto,
     });
+
+    this.realtime.emitStoreEvent(
+      store.id,
+      'stores.updated',
+      { store },
+      { type: 'store', id: store.id },
+    );
+
+    return store;
   }
 }

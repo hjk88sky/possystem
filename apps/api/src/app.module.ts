@@ -9,6 +9,7 @@ import { OrdersModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
 import { TablesModule } from './tables/tables.module';
 import { DevicesModule } from './devices/devices.module';
+import { RealtimeModule } from './realtime/realtime.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { DevicesModule } from './devices/devices.module';
       isGlobal: true,
     }),
     PrismaModule,
+    RealtimeModule,
     HealthModule,
     AuthModule,
     StoresModule,

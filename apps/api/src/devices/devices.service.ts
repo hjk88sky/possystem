@@ -10,10 +10,14 @@ import { RegisterDeviceDto } from './dto/register-device.dto';
 import { UpdateDeviceDto } from './dto/update-device.dto';
 import { HeartbeatDto } from './dto/heartbeat.dto';
 import { GetDevicesQueryDto } from './dto/get-devices-query.dto';
+import { RealtimeService } from '../realtime/realtime.service';
 
 @Injectable()
 export class DevicesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private realtime: RealtimeService,
+  ) {}
 
   async register(storeId: string, dto: RegisterDeviceDto) {
     const existing = await this.prisma.device.findUnique({
@@ -26,8 +30,11 @@ export class DevicesService {
       );
     }
 
+    let device;
+    let event = 'devices.registered';
+
     if (existing && existing.storeId === storeId) {
-      return this.prisma.device.update({
+      device = await this.prisma.device.update({
         where: { id: existing.id },
         data: {
           type: dto.type as any,
@@ -39,21 +46,31 @@ export class DevicesService {
           lastSeenAt: new Date(),
         },
       });
+      event = 'devices.updated';
+    } else {
+      device = await this.prisma.device.create({
+        data: {
+          storeId,
+          deviceCode: dto.deviceCode,
+          type: dto.type as any,
+          os: dto.os as any,
+          deviceName: dto.deviceName,
+          appVersion: dto.appVersion,
+          hardwareModel: dto.hardwareModel,
+          status: 'ACTIVE',
+          lastSeenAt: new Date(),
+        },
+      });
     }
 
-    return this.prisma.device.create({
-      data: {
-        storeId,
-        deviceCode: dto.deviceCode,
-        type: dto.type as any,
-        os: dto.os as any,
-        deviceName: dto.deviceName,
-        appVersion: dto.appVersion,
-        hardwareModel: dto.hardwareModel,
-        status: 'ACTIVE',
-        lastSeenAt: new Date(),
-      },
-    });
+    this.realtime.emitStoreEvent(
+      storeId,
+      event,
+      { device },
+      { type: 'device', id: device.id },
+    );
+
+    return device;
   }
 
   async findAll(storeId: string, query?: GetDevicesQueryDto) {
@@ -92,7 +109,7 @@ export class DevicesService {
       );
     }
 
-    return this.prisma.device.update({
+    const device = await this.prisma.device.update({
       where: { id },
       data: {
         ...(dto.deviceName !== undefined && { deviceName: dto.deviceName }),
@@ -104,6 +121,15 @@ export class DevicesService {
         ...(dto.configJson !== undefined && { configJson: dto.configJson }),
       },
     });
+
+    this.realtime.emitStoreEvent(
+      storeId,
+      'devices.updated',
+      { device },
+      { type: 'device', id: device.id },
+    );
+
+    return device;
   }
 
   async heartbeat(storeId: string, id: string, dto: HeartbeatDto) {
@@ -128,6 +154,15 @@ export class DevicesService {
       data,
     });
 
-    return { lastSeenAt: updated.lastSeenAt };
+    const result = { lastSeenAt: updated.lastSeenAt };
+
+    this.realtime.emitStoreEvent(
+      storeId,
+      'devices.heartbeat',
+      { deviceId: updated.id, ...result },
+      { type: 'device', id: updated.id },
+    );
+
+    return result;
   }
 }

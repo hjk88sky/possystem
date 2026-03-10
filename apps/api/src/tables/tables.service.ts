@@ -6,10 +6,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateTableDto } from './dto/create-table.dto';
 import { UpdateTableDto } from './dto/update-table.dto';
 import { UpdateLayoutDto } from './dto/update-layout.dto';
+import { RealtimeService } from '../realtime/realtime.service';
 
 @Injectable()
 export class TablesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private realtime: RealtimeService,
+  ) {}
 
   async findAll(storeId: string) {
     return this.prisma.table.findMany({
@@ -53,7 +57,7 @@ export class TablesService {
       }
     }
 
-    return this.prisma.table.create({
+    const table = await this.prisma.table.create({
       data: {
         storeId,
         name: dto.name,
@@ -67,6 +71,15 @@ export class TablesService {
       },
       include: { zone: true },
     });
+
+    this.realtime.emitStoreEvent(
+      storeId,
+      'tables.created',
+      { table },
+      { type: 'table', id: table.id },
+    );
+
+    return table;
   }
 
   async update(storeId: string, id: string, dto: UpdateTableDto) {
@@ -81,7 +94,7 @@ export class TablesService {
       }
     }
 
-    return this.prisma.table.update({
+    const table = await this.prisma.table.update({
       where: { id },
       data: {
         ...(dto.name !== undefined && { name: dto.name }),
@@ -96,10 +109,19 @@ export class TablesService {
       },
       include: { zone: true },
     });
+
+    this.realtime.emitStoreEvent(
+      storeId,
+      'tables.updated',
+      { table },
+      { type: 'table', id: table.id },
+    );
+
+    return table;
   }
 
   async updateLayout(storeId: string, dto: UpdateLayoutDto) {
-    return this.prisma.transaction(async (tx) => {
+    const tables = await this.prisma.transaction(async (tx) => {
       for (const item of dto.tables) {
         const table = await tx.table.findFirst({
           where: { id: item.id, storeId },
@@ -114,12 +136,21 @@ export class TablesService {
         });
       }
 
-      return this.prisma.table.findMany({
+      return tx.table.findMany({
         where: { storeId },
         include: { zone: true },
         orderBy: { name: 'asc' },
       });
     });
+
+    this.realtime.emitStoreEvent(
+      storeId,
+      'tables.layout.updated',
+      { tables },
+      { type: 'table-layout' },
+    );
+
+    return tables;
   }
 
   async findAllZones(storeId: string) {
@@ -131,12 +162,21 @@ export class TablesService {
   }
 
   async createZone(storeId: string, name: string, sortOrder?: number) {
-    return this.prisma.tableZone.create({
+    const zone = await this.prisma.tableZone.create({
       data: {
         storeId,
         name,
         sortOrder: sortOrder ?? 0,
       },
     });
+
+    this.realtime.emitStoreEvent(
+      storeId,
+      'tables.zones.created',
+      { zone },
+      { type: 'table-zone', id: zone.id },
+    );
+
+    return zone;
   }
 }
