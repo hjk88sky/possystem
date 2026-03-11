@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../devices/providers/device_provider.dart';
+import '../providers/cart_provider.dart';
 import '../widgets/category_tab_bar.dart';
 import '../widgets/menu_grid.dart';
 import '../widgets/cart_panel.dart';
@@ -19,7 +20,9 @@ class _PosScreenState extends ConsumerState<PosScreen> {
   void initState() {
     super.initState();
     // 로그인 성공 후 디바이스 자동 등록 + 하트비트 시작
-    Future.microtask(() {
+    Future.microtask(() async {
+      await ref.read(cartProvider.notifier).restoreDraft();
+      await ref.read(cartPriorityProvider.notifier).restoreDraft();
       ref.read(deviceRegistrationProvider.notifier).registerDevice();
     });
   }
@@ -89,6 +92,8 @@ class _PosScreenState extends ConsumerState<PosScreen> {
               Navigator.pop(ctx);
               // 하트비트 중지 후 로그아웃
               ref.read(deviceRegistrationProvider.notifier).stopHeartbeat();
+              ref.read(cartProvider.notifier).clear();
+              ref.read(cartPriorityProvider.notifier).reset();
               ref.read(authProvider.notifier).logout();
             },
             child: const Text('로그아웃'),

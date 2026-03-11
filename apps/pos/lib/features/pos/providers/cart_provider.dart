@@ -1,10 +1,20 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/storage/pos_local_cache.dart';
 import '../models/cart_item.dart';
 import '../models/menu_item.dart';
 import '../models/order.dart';
 
 class CartNotifier extends StateNotifier<List<CartItem>> {
-  CartNotifier() : super([]);
+  CartNotifier(this._cache) : super(const []);
+
+  final PosLocalCache _cache;
+
+  Future<void> restoreDraft() async {
+    state = await _cache.loadCartItems();
+  }
 
   void addItem(MenuItem menuItem) {
     final index = state.indexWhere((e) => e.menuItem.id == menuItem.id);
@@ -17,10 +27,12 @@ class CartNotifier extends StateNotifier<List<CartItem>> {
     } else {
       state = [...state, CartItem(menuItem: menuItem)];
     }
+    unawaited(_cache.saveCartItems(state));
   }
 
   void removeItem(String menuItemId) {
     state = state.where((e) => e.menuItem.id != menuItemId).toList();
+    unawaited(_cache.saveCartItems(state));
   }
 
   void updateQuantity(String menuItemId, int quantity) {
@@ -28,40 +40,49 @@ class CartNotifier extends StateNotifier<List<CartItem>> {
       removeItem(menuItemId);
       return;
     }
+
     final updated = [...state];
     final index = updated.indexWhere((e) => e.menuItem.id == menuItemId);
     if (index >= 0) {
       updated[index] = updated[index].copyWith(quantity: quantity);
       state = updated;
+      unawaited(_cache.saveCartItems(state));
     }
   }
 
   void clear() {
-    state = [];
+    state = const [];
+    unawaited(_cache.saveCartItems(state));
   }
 }
 
-/// 주문 중요도 상태 관리
 class PriorityNotifier extends StateNotifier<OrderPriority> {
-  PriorityNotifier() : super(OrderPriority.normal);
+  PriorityNotifier(this._cache) : super(OrderPriority.normal);
+
+  final PosLocalCache _cache;
+
+  Future<void> restoreDraft() async {
+    state = await _cache.loadCartPriority();
+  }
 
   void setPriority(OrderPriority priority) {
     state = priority;
+    unawaited(_cache.saveCartPriority(priority));
   }
 
   void reset() {
     state = OrderPriority.normal;
+    unawaited(_cache.saveCartPriority(state));
   }
 }
 
 final cartProvider = StateNotifierProvider<CartNotifier, List<CartItem>>((ref) {
-  return CartNotifier();
+  return CartNotifier(ref.watch(posLocalCacheProvider));
 });
 
-/// 현재 선택된 주문 중요도
 final cartPriorityProvider =
     StateNotifierProvider<PriorityNotifier, OrderPriority>((ref) {
-  return PriorityNotifier();
+  return PriorityNotifier(ref.watch(posLocalCacheProvider));
 });
 
 final cartSubtotalProvider = Provider<int>((ref) {
