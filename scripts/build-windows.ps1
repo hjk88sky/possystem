@@ -1,5 +1,6 @@
 param(
-  [string]$AliasPath = 'C:\possystem-build'
+  [string]$AliasPath = 'C:\possystem-build',
+  [string]$ApiOrigin = 'http://localhost:3000'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -57,7 +58,7 @@ try {
     throw 'flutter pub get failed.'
   }
 
-  & flutter build windows
+  & flutter build windows "--dart-define=POS_API_ORIGIN=$ApiOrigin"
   if ($LASTEXITCODE -ne 0) {
     throw 'flutter build windows failed.'
   }

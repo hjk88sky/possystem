@@ -16,12 +16,18 @@ Run from the repository root:
 .\scripts\build-windows.ps1
 ```
 
+To target a different API server:
+
+```powershell
+.\scripts\build-windows.ps1 -ApiOrigin http://192.168.0.10:3000
+```
+
 What the script does:
 
 - Creates a stable ASCII junction at `C:\possystem-build`
 - Runs `flutter clean`
 - Runs `flutter pub get`
-- Runs `flutter build windows`
+- Runs `flutter build windows --dart-define=POS_API_ORIGIN=...`
 
 Output:
 
